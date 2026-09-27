@@ -1,0 +1,18 @@
+{% comment %}
+  Opts into cross-document (MPA) view transitions. Emitted per-layout because assets/base.css is
+  shared and can't read theme settings.
+
+  OM: Horizon also rendered `<link rel="expect" href="#MainContent" blocking="render">` here, which
+  holds first paint for up to 1800 ms so the transition runs consistently. Removed: transitions are
+  a progressive enhancement and must never delay navigation (DECISIONS.md D-033).
+  view-transitions.js already treats the blocker as optional.
+{% endcomment %}
+{% if settings.transition_to_main_product or settings.page_transition_enabled %}
+  {% style %}
+    @media (prefers-reduced-motion: no-preference) {
+      @view-transition {
+        navigation: auto;
+      }
+    }
+  {% endstyle %}
+{% endif %}

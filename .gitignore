@@ -9,6 +9,7 @@ node_modules/
 .shopify/
 
 # Build output
+dist/
 *.zip
 
 # Logs and OS noise

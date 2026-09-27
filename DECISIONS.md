@@ -3,13 +3,17 @@
 One line of reasoning each. Superseded decisions get struck through and point to their replacement; nothing is deleted.
 
 ## Foundation
-- **D-001** Base: fork Shopify Horizon (theme_version 4.2.0), pinned to an exact upstream commit (recorded in step 1). *Why:* cart drawer, facets, predictive search, quick add, variant picker, fly-to-cart, structured data and a11y are already production-grade; Skeleton would mean rebuilding all of it.
+- **D-001** Base: fork Shopify Horizon 4.2.0 at upstream commit `5acd1b6b66c02f61d3216e3adace5dd9e0404fc9` (2026-09-21, github.com/Shopify/horizon; no release tags upstream). *Why:* cart drawer, facets, predictive search, quick add, variant picker, fly-to-cart, structured data and a11y are already production-grade; Skeleton would mean rebuilding all of it.
 - **D-002** License: Horizon's license allows delivering a derived theme to a merchant for their own store as a services engagement, and forbids reselling or listing it. This theme is for Origin Manila only. *Why:* plan approved with Horizon; switch to Skeleton only if the theme is ever meant to be resold.
 - **D-003** Repo layout: `theme/` ships; `demo/`, `tools/`, `design/`, `docs/` never do. *Why:* nothing outside `theme/` can leak into the zip.
 - **D-004** Shopify CLI is a pinned devDependency run through npm scripts, not a global install. *Why:* same CLI version for everyone who clones the repo.
 - **D-005** Project `.npmrc` sets `legacy-peer-deps=false`. *Why:* the machine-wide setting is `true`, which silently drops peer dependencies.
 - **D-006** LF line endings enforced by `.gitattributes`. *Why:* Windows `core.autocrlf=true`; Liquid, JSON and CSV must be byte-identical everywhere.
 - **D-007** New files use the `om-` prefix; edits inside Horizon files are minimal and marked `OM:`. *Why:* keeps manual upstream merges possible.
+- **D-008** Theme Check baseline accepted: 0 errors, 6 upstream warnings. 5× `UnusedDocParam` in `snippets/divider.liquid` are false positives (Theme Check can't read dotted `@param settings.x` names; the snippet uses them). 1× `ExcessiveSettingsCount` on `sections/header.liquid` (42 > 40) gets fixed in step 3 when the header is reworked. Everything `om-` must be warning-free. *Why:* editing Horizon files to silence false positives only makes upstream merges harder.
+- **D-009** Horizon's license notice ships inside the theme as `snippets/om-license-horizon.liquid` (comment only, rendered from `layout/theme.liquid` so it isn't orphaned; outputs nothing). *Why:* `shopify theme package` drops root files like `LICENSE.md`, and the license requires the notice in every copy.
+- **D-018** `theme_info` renamed to "Origin" 0.1.0. *Why:* the merchant's theme library shouldn't show "Horizon"; version tracks this build.
+- **D-019** `npm run package` moves the zip from `theme/` to `dist/`. *Why:* the CLI writes it inside the synced theme folder.
 
 ## Architecture
 - **D-010** Horizon theme blocks for commerce and content pages; classic section-defined blocks for cinema sections. *Why:* scroll timelines need a fixed structure and max counts that nestable theme blocks can't guarantee.
@@ -34,7 +38,7 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-030** Archivo variable (OFL, self-hosted latin subset; wide + black for display) and a `font_picker` body font; UnifrakturMaguntia (OFL) blackletter loads only in sections that use it. *Why:* one file covers display and UI; blackletter never loads on shopping pages.
 - **D-031** Motion: UI 240ms `cubic-bezier(.2,.8,.2,1)` in / 160ms out; micro 120ms; scrubbed timelines `ease: none` with `scrub: 0.8`; one-shots `expo.out` 0.7s; flash cut 120ms; card sheen 700ms; fly-to-cart 550ms arc. *Why:* snappy UI, cinematic scroll, nothing a buyer waits on.
 - **D-032** Sticky header, transparent over the hero then solid black; hides on scroll-down only on the homepage. Desktop inline menu with a light mega panel; mobile full-screen menu dialog with search. *Why:* cart and search stay reachable on every shopping page.
-- **D-033** Page transitions: `@view-transition { navigation: auto }` plus a card → product image morph; Horizon's render-blocking `<link rel="expect" blocking="render">` is removed. *Why:* the brief says transitions never delay navigation.
+- **D-033** Page transitions: `@view-transition { navigation: auto }` plus a card → product image morph; Horizon's render-blocking `<link rel="expect" blocking="render">` is removed (done in step 1, `snippets/view-transition-opt-in.liquid`; `view-transitions.js` already treats it as optional). Both transition settings stay off until step 4 tunes them. *Why:* the brief says transitions never delay navigation.
 - **D-034** Word-by-word reveals are split in Liquid (spans + a visually hidden full sentence); no SplitText. *Why:* no JS layout work, no CLS, screen readers read the sentence once.
 - **D-035** The colorway background tweens the sticky stage, not `<body>`. *Why:* looks identical and avoids a full-page repaint every frame.
 - **D-036** Film grain only in the homepage cinema. *Why:* invisible where it could slow a buyer down.

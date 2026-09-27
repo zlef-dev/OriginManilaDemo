@@ -10,10 +10,13 @@
   "scripts": {
     "check": "shopify theme check --path theme",
     "dev": "shopify theme dev --path theme",
-    "package": "shopify theme package --path theme",
+    "package": "shopify theme package --path theme && node tools/move-zip.mjs",
     "demo:fetch": "node demo/scripts/fetch-catalog.mjs",
     "demo:csv": "node demo/scripts/build-csv.mjs",
     "demo:verify": "node demo/scripts/verify-csv.mjs",
     "demo": "npm run demo:fetch && npm run demo:csv && npm run demo:verify"
+  },
+  "devDependencies": {
+    "@shopify/cli": "4.8.2"
   }
 }
