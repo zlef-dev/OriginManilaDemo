@@ -65,4 +65,9 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-061** Handles, titles, descriptions, option names and values are mirrored exactly. *Why:* prove the theme on their real, messy data.
 - **D-062** Tags = collection handles (+ their existing tags). Collections are smart collections "Product tag is equal to <handle>" with the handle set by hand. *Why:* the CSV "Collection" column only makes one manual collection per product, named by title (wrong handles).
 - **D-063** Inventory: sold-out variants 0; available variants 1 in 1-of-none, 6 elsewhere; policy DENY. *Why:* the public JSON exposes availability, not quantity, and one-of-ones should behave like one-of-ones.
-- **D-064** The catalog snapshot in `demo/data` is committed. *Why:* the demo stays reproducible as their stock changes.
+- **D-064** The catalog snapshot in `demo/data` and the generated files in `demo/out` are committed. *Why:* the demo stays reproducible as their stock changes, and the CSV is importable straight from the repo.
+- **D-065** Variant weights above 30 kg are left blank in the CSV and listed in `catalog-report.md` (one variant on their store says 500,000 g). *Why:* it would break weight-based shipping rates in test checkouts; everything else is mirrored as-is.
+- **D-066** Image alt text: the public JSON has none, so the CSV uses the product title (image 1) and "title, view N" (others). *Why:* no empty alts in the demo gallery.
+- **D-067** CSV rows are written oldest-first by `published_at`. *Why:* import creates products in row order, so the admin's "Newest" sort lands close to their live order.
+- **D-068** Menu parents (Tops, Bottoms, More) link to `/collections/all`. *Why:* Shopify menu items need a link; the theme opens children on hover/tap anyway.
+- **D-069** `demo:verify -- --live` is best-effort: help.shopify.com sometimes answers 403 to scripted requests, so a failed download is a warning. `HEADERS` was checked against the template downloaded 2026-09-27 (saved in `demo/reference/`). *Why:* bot protection shouldn't fail an otherwise valid CSV.

@@ -1,0 +1,12 @@
+{
+  "source": "https://originmanila.com",
+  "fetched_at": "2026-09-27T03:23:09.124Z",
+  "counts": {
+    "collections": 14,
+    "products": 177,
+    "variants": 685,
+    "images": 1008
+  },
+  "expected_handles_missing": [],
+  "unexpected_handles": []
+}

@@ -4,7 +4,7 @@
 |---|---|---|
 | 0 | Repo setup | ✅ Done |
 | 1 | Base: Horizon fork | ✅ Done (preview check pending on you) |
-| 2 | Demo data | ⏳ |
+| 2 | Demo data | ✅ Done (import pending on you) |
 | 3 | Brand system | — |
 | 4 | Commerce foundation | — |
 | 5 | Cinema core | — |
@@ -32,5 +32,15 @@
 - Browser check: **not possible yet**. `shopify theme dev` needs your store login. Carried over to your to-do list.
 - Deferred to step 6: testing whether Shopify accepts `.glb` in theme assets (nothing to test until the GLB exists; the `.js` fallback is planned).
 
+### Step 2 — Demo data (2026-09-27)
+- `demo/scripts/fetch-catalog.mjs` mirrors originmanila.com's public JSON (paginated, polite, retries) into `demo/data/`: 14 collections, 177 products, 685 variants, 1,008 images.
+- `demo/scripts/build-csv.mjs` writes `demo/out/products.csv` (1,115 rows) in Shopify's current 57-column format, plus `collections.md`, `menus.md`, `catalog-report.md`.
+- `demo/scripts/verify-csv.mjs` re-checks the CSV against the snapshot: header, row shape, tags, stock vs availability (405 sold-out variants = 0), images, booleans. Result: **OK**.
+- `demo/SETUP.md`: the admin checklist.
+- Findings worth pitching: 45% of products sold out; option names spelled 6+ ways (`Size`, `SIZE`, `Clor`…); product type blank on all 177; 23 empty descriptions; 5 products in no collection; one variant weighs 500 kg.
+- Theme Check: unchanged (no theme files touched in this step).
+
 ## Waiting on you
-- Run `npm run dev -- --store <your-store>.myshopify.com` once and confirm stock Horizon boots (a plain Horizon homepage is expected at this point).
+1. Tell me your dev store domain (`something.myshopify.com`).
+2. Do `demo/SETUP.md` in the dev store admin (currency, CSV import, 14 collections, menus, Search & Discovery, keep password on).
+3. Run `npm run dev -- --store <your-store>.myshopify.com` in your own terminal and log in. Confirm stock Horizon loads at http://127.0.0.1:9292 with their products. Once it's running I can check desktop/mobile and the console myself in the browser pane.
