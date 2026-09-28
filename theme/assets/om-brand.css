@@ -118,6 +118,36 @@
     center / contain no-repeat;
 }
 
+/* ---------- Add to cart: chrome glint on Horizon's flying image ---------- */
+
+fly-to-cart::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.75) 48%,
+    rgb(190 215 255 / 0.5) 52%,
+    transparent 65%
+  );
+  transform: translateX(-100%);
+  animation: om-glint 0.6s var(--om-ease-out) 0.1s both;
+}
+
+@keyframes om-glint {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  fly-to-cart::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* ---------- Chrome sheen on product cards ---------- */
 
 .om-sheen {

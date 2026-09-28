@@ -42,8 +42,8 @@
     "type_size_h6": "12",
     "type_line_height_h6": "display-loose",
     "page_width": "normal",
-    "page_transition_enabled": false,
-    "transition_to_main_product": false,
+    "page_transition_enabled": true,
+    "transition_to_main_product": true,
     "card_hover_effect": "none",
     "badge_position": "top-left",
     "badge_corner_radius": 0,
@@ -104,7 +104,9 @@
     "om_claimed_dim": true,
     "om_one_of_one_collection": "1-of-none",
     "om_one_of_one_label": "Only 1 exists",
-    "om_card_sheen": true
+    "om_card_sheen": true,
+    "add_to_cart_animation": true,
+    "auto_open_cart_drawer": true
   },
   "presets": {
     "Default": {
@@ -141,8 +143,8 @@
       "type_size_h6": "12",
       "type_line_height_h6": "display-loose",
       "page_width": "normal",
-      "page_transition_enabled": false,
-      "transition_to_main_product": false,
+      "page_transition_enabled": true,
+      "transition_to_main_product": true,
       "card_hover_effect": "none",
       "badge_position": "top-left",
       "badge_corner_radius": 0,
@@ -202,7 +204,9 @@
       "om_claimed_dim": true,
       "om_one_of_one_collection": "1-of-none",
       "om_one_of_one_label": "Only 1 exists",
-      "om_card_sheen": true
+      "om_card_sheen": true,
+      "add_to_cart_animation": true,
+      "auto_open_cart_drawer": true
     }
   }
 }

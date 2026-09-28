@@ -383,6 +383,10 @@
           {% else %}
             {%- render 'product-media', media: media, sizes: media_sizes, is_main_product_media: forloop.first -%}
           {% endif %}
+          {%- comment -%} OM: CLAIMED stamp on the lead image when the product is sold out. {%- endcomment -%}
+          {%- if forloop.first -%}
+            {%- render 'om-product-status', product: selected_product, context: 'media' -%}
+          {%- endif -%}
         {% endcapture %}
         {% capture class %}
           {{ product_media_container_class }} product-media-container--{{ media.media_type }}{% if block_settings.zoom %} product-media-container--zoomable{% endif %}{% if forloop.index0 == lowest_aspect_ratio_index and block_settings.aspect_ratio == 'adapt' %} product-media-container--tallest{% endif %}
@@ -498,6 +502,10 @@
             {% else %}
               {%- render 'product-media', media: media, sizes: media_sizes, is_main_product_media: forloop.first -%}
             {% endif %}
+            {%- comment -%} OM: CLAIMED stamp on the lead image when the product is sold out. {%- endcomment -%}
+            {%- if forloop.first -%}
+              {%- render 'om-product-status', product: selected_product, context: 'media' -%}
+            {%- endif -%}
           </li>
         {% endfor %}
       </ul>

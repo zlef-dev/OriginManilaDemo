@@ -6,7 +6,7 @@
 | 1 | Base: Horizon fork | ✅ Done |
 | 2 | Demo data | ✅ Done (store seeded) |
 | 3 | Brand system | ✅ Done |
-| 4 | Commerce foundation | — |
+| 4 | Commerce foundation | ✅ Done |
 | 5 | Cinema core | — |
 | 6 | Hero + 3D logo | — |
 | 7 | Scenes | — |
@@ -64,6 +64,13 @@
 - Theme Check: 0 errors (6 accepted upstream warnings, D-008).
 - Console: no theme errors; platform errors on the 127.0.0.1 proxy logged for QA (D-082).
 
+### Step 4 — Commerce foundation (2026-09-28)
+- PDP: CLAIMED stamp on the lead image of sold-out products; sold-out sizes struck through (Horizon); ProductGroup + Organization structured data present.
+- Add to cart (tested on the dev store): item added via AJAX, fly-to-cart with chrome glint, bubble bump, drawer auto-opens with the line item and ₱ total — no reload, no theme console errors.
+- Verified: collection filters (Availability, Price, Size), search ("camou" → 21 results, 11 stamped), 404, cart page, password page in brand styling.
+- Page transitions enabled (non-blocking).
+- Theme Check: 0 errors.
+- Note: password page <title> renders as "– Origin" (Horizon, low impact; revisit in QA).
+
 ## Waiting on you
-1. **Store name → Origin** (header shows "origin-demo" until the logo lands in step 6): https://admin.shopify.com/store/origin-demo-hoqa85o7/settings/general → Store details → edit → Store name "Origin" → Save.
-2. **Size filter** in Search & Discovery (only Availability and Price show today) — steps in `demo/SETUP.md`.
+- Nothing. Next: step 5 (cinema core).

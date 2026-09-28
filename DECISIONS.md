@@ -67,6 +67,7 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-056** "Only 1 exists" tag comes from a collection setting (default `1-of-none`), not product tags. It sits in the top corner opposite Horizon's sale badge; bottom corners belong to quick add. *Why:* their real products aren't tagged; collection membership resolves on their store; the first placement collided with mobile quick add.
 - **D-057** Product-card titles are clamped to 2 lines in CSS; the full title stays in the DOM. *Why:* a 120-character title grew a card to 6 lines and broke the grid rows.
 - **D-058** The hotspot dialog keeps Horizon's plain "Sold out" text instead of the stamp. *Why:* it replaces the buy button, and the purchase point should be literal.
+- **D-05A** Product page: the CLAIMED stamp overlays the lead image (carousel and grid presentations); the buy button keeps Horizon's literal "Sold out". Add to cart keeps Horizon's fly-to-cart + bubble bump, adds a CSS chrome glint (off for reduced motion), and auto-opens the cart drawer. Page transitions (cross-document, card → product image) are on, non-blocking since D-033. *Why:* the signature details reuse Horizon's tested AJAX cart + Section Rendering instead of a second implementation.
 - **D-059** Mobile quick add is on. *Why:* one-tap add on phones, where most of their traffic will be.
 
 ## Horizon findings
