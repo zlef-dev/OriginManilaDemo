@@ -1,0 +1,156 @@
+/*
+ * Origin brand layer. Loaded on every page, so it stays small and JS-free.
+ * Tokens (--om-*) are defined in snippets/om-brand.liquid.
+ */
+
+/* ---------- Type details ---------- */
+
+:is(h1, h2, .h1, .h2) {
+  text-wrap: balance;
+}
+
+::selection {
+  background: var(--color-foreground);
+  color: var(--color-background);
+}
+
+/* Horizon smooth-scrolls html and .page-wrapper for everyone; respect reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  .page-wrapper {
+    scroll-behavior: auto;
+  }
+}
+
+/* Card titles: two lines max so long names never break the grid. The full title stays in the
+   DOM, so the link's accessible name and search indexing are unchanged. */
+.product-card [ref='productTitleLink'] p[role='heading'] {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* ---------- Sold-out stamp ---------- */
+
+.om-stamp {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-flat);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.om-stamp__ink {
+  --om-stamp-size: clamp(0.8rem, 0.55rem + 1.1vw, 1.35rem);
+
+  max-inline-size: 88%;
+  padding: 0.45em 0.75em 0.4em;
+  overflow: hidden;
+  font-family: var(--om-font-display);
+  font-size: var(--om-stamp-size);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: clip;
+  color: var(--om-stamp-color);
+  /* Dark enough that the default red keeps ~4.5:1 even over a pure white photo. */
+  background: rgb(10 10 11 / 0.9);
+  border: 0.16em solid currentColor;
+  outline: 0.07em solid currentColor;
+  outline-offset: 0.2em;
+  transform: rotate(-9deg);
+}
+
+.om-stamp--media .om-stamp__ink {
+  --om-stamp-size: clamp(1.1rem, 0.7rem + 1.6vw, 2.1rem);
+}
+
+.card-gallery:has(.om-stamp--dim) img {
+  filter: grayscale(0.55) brightness(0.72);
+}
+
+/* ---------- One-of-one tag ---------- */
+
+.om-tag {
+  position: absolute;
+  inset-block-start: var(--padding-xs, 0.5rem);
+  z-index: var(--layer-flat);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  max-inline-size: calc(100% - 2 * var(--padding-xs, 0.5rem));
+  padding: 0.4em 0.65em;
+  overflow: hidden;
+  font-family: var(--font-accent--family);
+  font-size: var(--font-size--xs, 0.75rem);
+  font-weight: var(--font-accent--weight);
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-background);
+  background: var(--color-foreground);
+  pointer-events: none;
+}
+
+.om-tag--start {
+  inset-inline-start: var(--padding-xs, 0.5rem);
+}
+
+.om-tag--end {
+  inset-inline-end: var(--padding-xs, 0.5rem);
+}
+
+/* four-point sparkle */
+.om-tag::before {
+  content: '';
+  flex: none;
+  inline-size: 0.85em;
+  block-size: 0.85em;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 0c.9 6.6 4.8 10.6 12 12-7.2 1.4-11.1 5.4-12 12-.9-6.6-4.8-10.6-12-12C7.2 10.6 11.1 6.6 12 0z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+/* ---------- Chrome sheen on product cards ---------- */
+
+.om-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-flat);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.om-sheen::before {
+  content: '';
+  position: absolute;
+  inset: -10% -60%;
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    rgb(255 255 255 / 0.06) 44%,
+    rgb(255 255 255 / 0.4) 49%,
+    rgb(190 215 255 / 0.26) 51.5%,
+    rgb(255 255 255 / 0.06) 56%,
+    transparent 62%
+  );
+  opacity: 0;
+  transform: translateX(-70%);
+}
+
+@media (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .product-card:is(:hover, :focus-within) .om-sheen::before {
+    opacity: 1;
+    transform: translateX(70%);
+    transition:
+      transform var(--om-duration-sheen) var(--om-ease-out),
+      opacity var(--om-duration-micro) linear;
+  }
+}

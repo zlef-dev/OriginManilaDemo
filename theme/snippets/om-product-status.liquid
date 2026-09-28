@@ -1,0 +1,60 @@
+{%- doc -%}
+  Origin product status overlay, driven only by availability and theme settings:
+  - every variant sold out → CLAIMED stamp (screen readers hear the translated "Sold out")
+  - available and in the one-of-one collection → "Only 1 exists" tag
+  - on cards, an empty sheen layer for the hover effect (when enabled)
+
+  Must sit inside a positioned media container (card gallery, product media).
+
+  @param {product} product - The product the overlay describes.
+  @param {string} [context] - 'card' (default) or 'media' (product page gallery). Only cards get the sheen.
+
+  @example
+  {% render 'om-product-status', product: product, context: 'card' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign om_context = context | default: 'card'
+  assign om_is_one_of_one = false
+
+  if product.available and settings.om_one_of_one_collection != blank
+    assign om_collection_handles = product.collections | map: 'handle'
+    if om_collection_handles contains settings.om_one_of_one_collection.handle
+      assign om_is_one_of_one = true
+    endif
+  endif
+-%}
+
+{%- if product != blank -%}
+  {%- if om_context == 'card' and settings.om_card_sheen -%}
+    <span class="om-sheen" aria-hidden="true"></span>
+  {%- endif -%}
+
+  {%- if product.available == false -%}
+    {%- liquid
+      assign om_sold_out_text = 'content.product_badge_sold_out' | t
+      assign om_stamp_text = settings.om_claimed_label | default: om_sold_out_text
+    -%}
+    <span
+      class="om-stamp om-stamp--{{ om_context }}{% if settings.om_claimed_dim %} om-stamp--dim{% endif %}"
+      role="img"
+      aria-label="{{ om_sold_out_text | escape }}"
+    >
+      <span class="om-stamp__ink" aria-hidden="true">{{ om_stamp_text | escape }}</span>
+    </span>
+  {%- elsif om_is_one_of_one and settings.om_one_of_one_label != blank -%}
+    {%- comment -%}
+      Top corner opposite Horizon's sale badge; the bottom corners belong to quick add.
+    {%- endcomment -%}
+    {%- liquid
+      if settings.badge_position == 'top-right'
+        assign om_tag_side = 'start'
+      else
+        assign om_tag_side = 'end'
+      endif
+    -%}
+    <span class="om-tag om-tag--{{ om_context }} om-tag--{{ om_tag_side }}">
+      {{- settings.om_one_of_one_label | escape -}}
+    </span>
+  {%- endif -%}
+{%- endif -%}

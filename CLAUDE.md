@@ -28,3 +28,4 @@
 - Horizon upstream commit is pinned in DECISIONS.md (D-001).
 - Shopping pages (product, collection, cart, search) never load GSAP or three.js.
 - This machine has `legacy-peer-deps=true` globally; the project `.npmrc` turns it off for this repo.
+- Never run `sed -i` (or anything that writes temp files) inside `theme/` while `npm run dev` is running: the CLI uploads the temp file, Shopify rejects it, and the error page sticks until the dev server restarts. Edit with the Edit/Write tools or a Node script instead.

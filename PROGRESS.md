@@ -5,7 +5,7 @@
 | 0 | Repo setup | ✅ Done |
 | 1 | Base: Horizon fork | ✅ Done |
 | 2 | Demo data | ✅ Done (store seeded) |
-| 3 | Brand system | — |
+| 3 | Brand system | ✅ Done |
 | 4 | Commerce foundation | — |
 | 5 | Cinema core | — |
 | 6 | Hero + 3D logo | — |
@@ -53,6 +53,17 @@
 - Fixed on the way: source variant positions have gaps (deleted variants), so the seed numbers them 1..n.
 - Storefront check: /collections/1-of-none shows 47 items with sold-out badges; menu renders; Availability + Price filters already work without the app.
 
+### Step 3 — Brand system (2026-09-28)
+- Black palette + AA-checked colors (D-037), sharp corners and uppercase accent buttons (D-038), header restyled through settings (D-039).
+- Fonts: Archivo from Shopify's library for body/UI; self-hosted Archivo Expanded (34.7 KB, preloaded) for h1/h2 with metric-matched fallbacks measured in the browser (D-030).
+- New **Origin** group in Theme settings: wide headings toggle, stamp text/color/dimming, one-of-one collection + tag text, card sheen toggle.
+- CLAIMED stamp on sold-out cards, "✦ Only 1 exists" tag on available one-of-ones, CSS chrome sheen on hover (no JS; off for touch and reduced motion) — `snippets/om-product-status.liquid`, `assets/om-brand.css` (D-055, D-056).
+- Checked in the preview: hoodie collection 12 stamps / 14 cards (matches data); 1-of-none 11 stamps + 13 tags / 24 cards; sheen transition fires; 375px no horizontal scroll; tag no longer collides with mobile quick add; 120-char title clamps to 2 lines (D-057); PDP renders cleanly in the dark palette (struck-through sold-out sizes come from Horizon).
+- Review fixes: stamp contrast raised to ≥4.5:1 over white photos; reduced-motion users no longer get forced smooth scroll (D-081); heading font set to Archivo 700 to avoid an unused 900-weight download.
+- Found: Horizon scrolls inside `.page-wrapper` on desktop (D-080) — matters for step 5.
+- Theme Check: 0 errors (6 accepted upstream warnings, D-008).
+- Console: no theme errors; platform errors on the 127.0.0.1 proxy logged for QA (D-082).
+
 ## Waiting on you
-1. Time zone → Manila: https://admin.shopify.com/store/origin-demo-hoqa85o7/settings/general → Time zone → (GMT+08:00) Manila → Save.
-2. (Before step 4) Install Shopify Search & Discovery for the Size / Waist filters — steps in `demo/SETUP.md`.
+1. **Store name → Origin** (header shows "origin-demo" until the logo lands in step 6): https://admin.shopify.com/store/origin-demo-hoqa85o7/settings/general → Store details → edit → Store name "Origin" → Save.
+2. **Size filter** in Search & Discovery (only Availability and Price show today) — steps in `demo/SETUP.md`.

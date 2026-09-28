@@ -10,8 +10,8 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-005** Project `.npmrc` sets `legacy-peer-deps=false`. *Why:* the machine-wide setting is `true`, which silently drops peer dependencies.
 - **D-006** LF line endings enforced by `.gitattributes`. *Why:* Windows `core.autocrlf=true`; Liquid, JSON and CSV must be byte-identical everywhere.
 - **D-007** New files use the `om-` prefix; edits inside Horizon files are minimal and marked `OM:`. *Why:* keeps manual upstream merges possible.
-- **D-008** Theme Check baseline accepted: 0 errors, 6 upstream warnings. 5× `UnusedDocParam` in `snippets/divider.liquid` are false positives (Theme Check can't read dotted `@param settings.x` names; the snippet uses them). 1× `ExcessiveSettingsCount` on `sections/header.liquid` (42 > 40) gets fixed in step 3 when the header is reworked. Everything `om-` must be warning-free. *Why:* editing Horizon files to silence false positives only makes upstream merges harder.
-- **D-009** Horizon's license notice ships inside the theme as `snippets/om-license-horizon.liquid` (comment only, rendered from `layout/theme.liquid` so it isn't orphaned; outputs nothing). *Why:* `shopify theme package` drops root files like `LICENSE.md`, and the license requires the notice in every copy.
+- **D-008** Theme Check baseline accepted: 0 errors, 6 upstream warnings. 5× `UnusedDocParam` in `snippets/divider.liquid` are false positives (Theme Check can't read dotted `@param settings.x` names; the snippet uses them). 1× `ExcessiveSettingsCount` on `sections/header.liquid` (42 > 40) is also accepted: step 3 restyled the header through settings only, and deleting Horizon's header settings would fork its schema for no merchant benefit. Everything `om-` must be warning-free. *Why:* editing Horizon files to silence false positives only makes upstream merges harder.
+- **D-009** Third-party notices (Horizon's license; from step 3 also Archivo's OFL) ship inside the theme as `snippets/om-licenses.liquid` (comment only, rendered from `layout/theme.liquid` so it isn't orphaned; outputs nothing). *Why:* `shopify theme package` drops root files like `LICENSE.md`, and the license requires the notice in every copy.
 - **D-018** `theme_info` renamed to "Origin" 0.1.0. *Why:* the merchant's theme library shouldn't show "Horizon"; version tracks this build.
 - **D-019** `npm run package` moves the zip from `theme/` to `dist/`. *Why:* the CLI writes it inside the synced theme folder.
 
@@ -36,12 +36,16 @@ One line of reasoning each. Superseded decisions get struck through and point to
 
 ## Design system
 - **D-030** Archivo variable (OFL, self-hosted latin subset; wide + black for display) and a `font_picker` body font; UnifrakturMaguntia (OFL) blackletter loads only in sections that use it. *Why:* one file covers display and UI; blackletter never loads on shopping pages.
+  - *Refined in step 3:* body `archivo_n4`, subheading `archivo_n6`, heading + accent `archivo_n7` from Shopify's font library (editable; heading = accent so no extra download). Display = `assets/om-archivo-expanded.woff2` (Archivo, wdth 125, wght 800–900, latin, 34.7 KB, preloaded), applied to h1/h2 through `--font-heading--family` when the "Wide display headings" setting is on. Fallback faces are metric-matched from browser measurements (Arial Black 116.4%, Arial/Helvetica Bold 132.1%) to avoid CLS on swap. OFL text ships in `snippets/om-licenses.liquid`.
 - **D-031** Motion: UI 240ms `cubic-bezier(.2,.8,.2,1)` in / 160ms out; micro 120ms; scrubbed timelines `ease: none` with `scrub: 0.8`; one-shots `expo.out` 0.7s; flash cut 120ms; card sheen 700ms; fly-to-cart 550ms arc. *Why:* snappy UI, cinematic scroll, nothing a buyer waits on.
 - **D-032** Sticky header, transparent over the hero then solid black; hides on scroll-down only on the homepage. Desktop inline menu with a light mega panel; mobile full-screen menu dialog with search. *Why:* cart and search stay reachable on every shopping page.
 - **D-033** Page transitions: `@view-transition { navigation: auto }` plus a card → product image morph; Horizon's render-blocking `<link rel="expect" blocking="render">` is removed (done in step 1, `snippets/view-transition-opt-in.liquid`; `view-transitions.js` already treats it as optional). Both transition settings stay off until step 4 tunes them. *Why:* the brief says transitions never delay navigation.
 - **D-034** Word-by-word reveals are split in Liquid (spans + a visually hidden full sentence); no SplitText. *Why:* no JS layout work, no CLS, screen readers read the sentence once.
 - **D-035** The colorway background tweens the sticky stage, not `<body>`. *Why:* looks identical and avoids a full-page repaint every frame.
 - **D-036** Film grain only in the homepage cinema. *Why:* invisible where it could slow a buyer down.
+- **D-037** Palette (Horizon 4.2 `color_palette`, every other color follows it): background `#0a0a0b`, foreground `#f4f4f2`, color1 `#a1a1a6` (muted text, 7.7:1), color2 `#17171a` (surfaces), color3 `#6e6e74` (input/variant/popover borders, ≥3:1 for UI components). *Why:* black base per brand, AA everywhere, and the owner re-themes from one control.
+- **D-038** Zero corner radius on buttons, inputs, cards, badges, popovers and variant buttons; buttons and badges uppercase in the accent font. *Why:* hard-edged streetwear look; chrome and sparkle carry the Y2K part.
+- **D-039** Header: uppercase 12px accent-font menu, 1px divider, sticky always, transparent over the homepage hero; announcement "Shipping worldwide from Manila" (their store ships to most countries per `meta.json`). *Why:* settings-only restyle keeps Horizon's header behavior; the copy is editable demo content in `header-group.json`, not theme code.
 
 ## Storyboard
 - **D-040** Order: Intro → Hero → Concrete Jungle manifesto → Color Run (Concrete Jungle camo hoodies) → 1 OF NONE exhibit → Shop the Drop → Finale / Drop Mode. *Why:* the camo colorways pay off the Concrete Jungle story, and the one-of-ones become the climax.
@@ -59,6 +63,16 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-052** Option names are matched case-insensitively (Size / SIZE / WAISTLINE); size-like names are a theme setting. *Why:* their data is inconsistent and must work as-is.
 - **D-053** No metafields or metaobjects are required. *Why:* zero setup on their store.
 - **D-054** Filters come from Shopify Search & Discovery (free, first-party). *Why:* storefront filters are configured there; the theme renders whatever is set.
+- **D-055** CLAIMED stamp (`snippets/om-product-status.liquid`): red `#ff3b47` Archivo Expanded on a 90% black plate, double border, −9°; ≥4.5:1 even over a white photo. Accessible name is the translated "Sold out"; label, color and image dimming are settings. Horizon's sold-out badge is suppressed on cards (sale badge kept). *Why:* scarcity as a flex without losing legibility or meaning for screen readers.
+- **D-056** "Only 1 exists" tag comes from a collection setting (default `1-of-none`), not product tags. It sits in the top corner opposite Horizon's sale badge; bottom corners belong to quick add. *Why:* their real products aren't tagged; collection membership resolves on their store; the first placement collided with mobile quick add.
+- **D-057** Product-card titles are clamped to 2 lines in CSS; the full title stays in the DOM. *Why:* a 120-character title grew a card to 6 lines and broke the grid rows.
+- **D-058** The hotspot dialog keeps Horizon's plain "Sold out" text instead of the stamp. *Why:* it replaces the buy button, and the purchase point should be literal.
+- **D-059** Mobile quick add is on. *Why:* one-tap add on phones, where most of their traffic will be.
+
+## Horizon findings
+- **D-080** At ≥990px Horizon scrolls inside `.page-wrapper` (`html`/`body` are `overflow: hidden`, height 100dvh) so the theme drawer can push the page; below 990px the window scrolls. *Why it matters:* cinema ScrollTriggers must use `.page-wrapper` as the scroller on desktop and the window on mobile (set per `gsap.matchMedia` branch); sticky stages work in both.
+- **D-081** Horizon sets `scroll-behavior: smooth` on `html` and `.page-wrapper` for everyone; `om-brand.css` turns it off under `prefers-reduced-motion: reduce`. *Why:* accessibility non-negotiable.
+- **D-082** Console on the `127.0.0.1` proxy shows three platform errors (the `shopify-account` widget's Storefront API call returns 400 and "menu not found"; Shop Pay's iframe is blocked by `frame-ancestors`). None come from theme code. *Why logged:* re-check on the real `?preview_theme_id=` URL in QA before claiming zero console errors.
 
 ## Demo data
 - **D-060** The CSV uses the exact header row of Shopify's current product template (help.shopify.com/csv/product_template.csv), UTF-8, LF. *Why:* "current import format".

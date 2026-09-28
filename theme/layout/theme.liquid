@@ -7,8 +7,8 @@
   dir="{{ request.locale.direction | default: 'ltr' }}"
 >
   <head>
-    {%- comment -%} OM: Horizon license notice (outputs nothing). {%- endcomment -%}
-    {%- render 'om-license-horizon' -%}
+    {%- comment -%} OM: third-party license notices (outputs nothing). {%- endcomment -%}
+    {%- render 'om-licenses' -%}
     {%- if settings.favicon != blank -%}
       <link
         rel="icon"
@@ -26,6 +26,8 @@
     {%- render 'scripts' -%}
     {%- render 'theme-styles-variables' -%}
     {%- render 'color-palette' -%}
+    {%- comment -%} OM: Origin brand layer; after the palette so its overrides win. {%- endcomment -%}
+    {%- render 'om-brand' -%}
 
     {% if request.design_mode %}
       {%- render 'theme-editor' -%}

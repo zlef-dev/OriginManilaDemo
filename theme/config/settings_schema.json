@@ -8,6 +8,76 @@
     "theme_support_url": "https://support.shopify.com/"
   },
   {
+    "name": "Origin",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Brand details added by the Origin theme. Colors, fonts and buttons live in their usual groups below."
+      },
+      {
+        "type": "header",
+        "content": "Headings"
+      },
+      {
+        "type": "checkbox",
+        "id": "om_display_font",
+        "label": "Wide display headings",
+        "info": "Sets large headings in Archivo Expanded, which ships with the theme. Turn off to use the heading font from Typography.",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Sold-out stamp"
+      },
+      {
+        "type": "text",
+        "id": "om_claimed_label",
+        "label": "Stamp text",
+        "default": "CLAIMED",
+        "info": "Stamped on products whose every variant is sold out. Screen readers still hear \"Sold out\"."
+      },
+      {
+        "type": "color",
+        "id": "om_claimed_color",
+        "label": "Stamp color",
+        "default": "#ff3b47",
+        "info": "Keep it bright: the stamp sits on a dark plate, and bright colors stay readable (4.5:1) over any photo."
+      },
+      {
+        "type": "checkbox",
+        "id": "om_claimed_dim",
+        "label": "Dim sold-out product images",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "One-of-one pieces"
+      },
+      {
+        "type": "collection",
+        "id": "om_one_of_one_collection",
+        "label": "One-of-one collection",
+        "info": "Products in this collection that are still available get the tag below."
+      },
+      {
+        "type": "text",
+        "id": "om_one_of_one_label",
+        "label": "Tag text",
+        "default": "Only 1 exists"
+      },
+      {
+        "type": "header",
+        "content": "Product cards"
+      },
+      {
+        "type": "checkbox",
+        "id": "om_card_sheen",
+        "label": "Chrome sheen on hover",
+        "default": true
+      }
+    ]
+  },
+  {
     "name": "t:names.logo_and_favicon",
     "settings": [
       {

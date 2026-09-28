@@ -2,7 +2,9 @@
 
 {% capture children %}
   {% unless product == blank %}
-    {%- if product.available == false or product.compare_at_price > product.price -%}
+    {%- comment -%} OM: sold-out products get the CLAIMED stamp from om-product-status, so this badge only shows sales. {%- endcomment -%}
+    {% render 'om-product-status', product: product, context: 'card' %}
+    {%- if product.available and product.compare_at_price > product.price -%}
       <div
         class="product-badges product-badges--{{ settings.badge_position }}"
         style="
