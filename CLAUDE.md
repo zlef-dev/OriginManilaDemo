@@ -20,7 +20,7 @@
 | Verify CSV | `npm run demo:verify` | Claude |
 | Theme zip | `npm run package` | Claude |
 | Vendor libraries (from step 5) | `npm run vendor` | Claude |
-| Bake 3D logo (from step 6) | `npm run bake:logo` | Claude |
+| Trace logo SVG | `npm run trace:logo` | Claude |
 
 ## House rules
 - Never push, share, publish or delete a theme, or change any store, without asking first. Dev store only.

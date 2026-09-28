@@ -28,14 +28,18 @@ One line of reasoning each. Superseded decisions get struck through and point to
 ## 3D logo
 - **D-020** The logo is Origin's shooting-star mark (star + open swoosh); it has no "O". The camera flies through the swoosh's orbit loop: the bake closes the gap between swoosh tip and star with a virtual chord, finds the largest inscribed circle (polylabel) and paths the camera along its axis. *Why:* it's their real mark, and the no-clip math is the same as for an O counter.
 - **D-021** Source art is `design/logo/origin-star-2000.png` (from originmanila.com), traced to `theme/assets/logo.svg` in step 6. *Why:* no official SVG exists on a spec build; 2000px is enough for a clean trace.
-- **D-022** SVG → GLB is baked offline (Node + three SVGLoader/ExtrudeGeometry + gltf-transform meshopt); the fly-through path is stored in glTF extras. *Why:* runtime extrusion of a bevelled logo is a 100–300ms main-thread task on mid-range phones (INP).
+- ~~**D-022** SVG → GLB is baked offline (Node + three SVGLoader/ExtrudeGeometry + gltf-transform meshopt); the fly-through path is stored in glTF extras. *Why:* runtime extrusion of a bevelled logo is a 100–300ms main-thread task on mid-range phones (INP).~~ → superseded by D-027.
 - **D-023** MeshPhysicalMaterial (metalness 1, roughness ≈0.08, iridescence ≈0.25, clearcoat) lit by a procedural studio environment through PMREM. *Why:* real reflections with no HDR download.
 - **D-024** No post-processing; sparkles are additive sprites with a twinkle shader; grain is CSS. *Why:* a bloom pass doubles fill-rate cost on mobile.
 - **D-025** WebGL only without reduced-motion, Save-Data or low memory; DPR cap 1.5 mobile / 2 desktop; renders only while visible; a frame-time watchdog falls back to the poster; idle float instead of gyro tilt. *Why:* performance budget, and iOS gyro needs a permission prompt.
-- **D-026** The static poster is rendered from the same GLB (`tools/poster.html`). *Why:* the fallback matches the live render.
+- ~~**D-026** The static poster is rendered from the same GLB (`tools/poster.html`).~~ → superseded by D-028.
+- **D-027** The logo is extruded at runtime from `assets/logo.svg` (traced by `npm run trace:logo`), after load + idle. *Why:* the real mark is two simple shapes (a few ms to extrude), so a GLB pipeline, meshopt decoder and the `.glb`-in-assets risk bought nothing.
+- **D-028** Static fallback = the same SVG inlined (`inline_asset_content`) with an SVG chrome gradient; optional image override setting. *Why:* zero download, crisp at any size, identical silhouette; it is also the first paint the 3D crossfades from.
+- **D-029** Fly-through target: rasterize the mark, keep empty cells walled in on ≥6 of 8 directions, pick the one with the most clearance (radius 188 SVG units on their logo). Camera near plane 0.01 ≪ clearance, asserted as `safe` at runtime. Accelerating dolly crosses the logo plane at ~93% scroll, on the flash cut. *Why:* the brief's "compute the path from the counter so it never clips", adapted to an open loop.
 
 ## Design system
 - **D-030** Archivo variable (OFL, self-hosted latin subset; wide + black for display) and a `font_picker` body font; UnifrakturMaguntia (OFL) blackletter loads only in sections that use it. *Why:* one file covers display and UI; blackletter never loads on shopping pages.
+  - *Step 5:* blackletter is **Grenze Gotisch** (OFL, no Reserved Font Name, 17 KB), not UnifrakturMaguntia (has an RFN, which makes a redistributed subset a licensing gray area).
   - *Refined in step 3:* body `archivo_n4`, subheading `archivo_n6`, heading + accent `archivo_n7` from Shopify's font library (editable; heading = accent so no extra download). Display = `assets/om-archivo-expanded.woff2` (Archivo, wdth 125, wght 800–900, latin, 34.7 KB, preloaded), applied to h1/h2 through `--font-heading--family` when the "Wide display headings" setting is on. Fallback faces are metric-matched from browser measurements (Arial Black 116.4%, Arial/Helvetica Bold 132.1%) to avoid CLS on swap. OFL text ships in `snippets/om-licenses.liquid`.
 - **D-031** Motion: UI 240ms `cubic-bezier(.2,.8,.2,1)` in / 160ms out; micro 120ms; scrubbed timelines `ease: none` with `scrub: 0.8`; one-shots `expo.out` 0.7s; flash cut 120ms; card sheen 700ms; fly-to-cart 550ms arc. *Why:* snappy UI, cinematic scroll, nothing a buyer waits on.
 - **D-032** Sticky header, transparent over the hero then solid black; hides on scroll-down only on the homepage. Desktop inline menu with a light mega panel; mobile full-screen menu dialog with search. *Why:* cart and search stay reachable on every shopping page.
@@ -69,6 +73,14 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-058** The hotspot dialog keeps Horizon's plain "Sold out" text instead of the stamp. *Why:* it replaces the buy button, and the purchase point should be literal.
 - **D-05A** Product page: the CLAIMED stamp overlays the lead image (carousel and grid presentations); the buy button keeps Horizon's literal "Sold out". Add to cart keeps Horizon's fly-to-cart + bubble bump, adds a CSS chrome glint (off for reduced motion), and auto-opens the cart drawer. Page transitions (cross-document, card → product image) are on, non-blocking since D-033. *Why:* the signature details reuse Horizon's tested AJAX cart + Section Rendering instead of a second implementation.
 - **D-059** Mobile quick add is on. *Why:* one-tap add on phones, where most of their traffic will be.
+
+## Cinema build (steps 5–7)
+- **D-090** Vendor packs via esbuild: vendor-gsap.js 44 KB gz, vendor-three.js 155 KB gz (tree-shaken). Homepage only; three loads after `load` + idle.
+- **D-091** Section JS imports shared code by relative URL (`./om-cinema.js`) instead of adding a second import map. *Why:* assets are one flat CDN folder; avoids import-map merging issues.
+- **D-092** Color run has no scroll snapping. *Why:* snapping felt like a hijack in testing; each colorway gets a fixed scroll share instead.
+- **D-093** The homepage header hides while scrolling forward through the hero and returns on any upward scroll or keyboard focus. *Why:* the transparent header sat on top of the chrome during the fly-through.
+- **D-094** Default demo copy (manifesto, kicker, drop date 2026-10-10 20:00 +0800) lives in `templates/index.json` / section defaults, all editable. *Why:* the pitch needs a finished look; Origin replaces the copy in the editor.
+- **D-095** Password page shows the drop countdown without its own signup (Horizon's password section already has one).
 
 ## Horizon findings
 - **D-080** At ≥990px Horizon scrolls inside `.page-wrapper` (`html`/`body` are `overflow: hidden`, height 100dvh) so the theme drawer can push the page; below 990px the window scrolls. *Why it matters:* cinema ScrollTriggers must use `.page-wrapper` as the scroller on desktop and the window on mobile (set per `gsap.matchMedia` branch); sticky stages work in both.

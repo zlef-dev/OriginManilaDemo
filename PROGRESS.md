@@ -7,11 +7,11 @@
 | 2 | Demo data | ✅ Done (store seeded) |
 | 3 | Brand system | ✅ Done |
 | 4 | Commerce foundation | ✅ Done |
-| 5 | Cinema core | — |
-| 6 | Hero + 3D logo | — |
-| 7 | Scenes | — |
-| 8 | QA | — |
-| 9 | Pitch package | — |
+| 5 | Cinema core | ✅ Done |
+| 6 | Hero + 3D logo | ✅ Done |
+| 7 | Scenes | ✅ Done |
+| 8 | QA | ✅ Done |
+| 9 | Pitch package | ✅ Done |
 
 ## Log
 
@@ -72,5 +72,14 @@
 - Theme Check: 0 errors.
 - Note: password page <title> renders as "– Origin" (Horizon, low impact; revisit in QA).
 
+### Steps 5–9 (2026-09-28)
+- Cinema core (`om-cinema.js`): OmSection lifecycle, per-breakpoint scroller (D-080), reduced motion/editor → static, batched ScrollTrigger.refresh.
+- Hero: traced logo → runtime chrome extrusion, iridescent clearcoat, sparkles, cursor tilt, fly-through the swoosh loop (D-027–D-029), vector chrome fallback, CSS-timed intro, headroom header.
+- Scenes: manifesto (word reveal, blackletter), color run (4 Concrete Jungle camo zips), 1 OF NONE exhibit (22 of 47 claimed, live), Shop the Drop (Horizon product list, NEW), drop countdown (index/live states) — also on the password page.
+- Browser QA: all sections render desktop 1280 and mobile 375; no horizontal scroll; no theme console errors; countdown flips to live on its own; CLS 0.000 home and PDP; product pages load zero GSAP/three.
+- Not measured: real mobile LCP/INP — the dev store is password-protected, so PageSpeed can't reach it, and the 127.0.0.1 proxy serves uncompressed files. Measure on Origin's store after install (docs/INSTALL-ORIGIN.md).
+- Theme Check: 0 errors.
+- Package: `npm run package` → dist/.
+
 ## Waiting on you
-- Nothing. Next: step 5 (cinema core).
+- Review the homepage at http://127.0.0.1:9292 and the pitch notes in docs/INSTALL-ORIGIN.md.
