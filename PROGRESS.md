@@ -48,6 +48,6 @@
 - `demo/scripts/catalog.mjs` now holds the shared catalog rules; CSV output verified byte-identical after the refactor.
 
 ## Waiting on you
-1. Tell me your dev store domain (`something.myshopify.com`).
-2. Do `demo/SETUP.md` in the dev store admin (currency, CSV import, 14 collections, menus, Search & Discovery, keep password on).
-3. Run `npm run dev -- --store <your-store>.myshopify.com` in your own terminal and log in. Confirm stock Horizon loads at http://127.0.0.1:9292 with their products. Once it's running I can check desktop/mobile and the console myself in the browser pane.
+1. Decide: automated Admin API seeding (Claude writes + runs `demo/scripts/seed-store.mjs`) or manual `demo/SETUP.md` steps 3–5.
+2. Set time zone to Manila (Admin API can't).
+3. Install Shopify Search & Discovery and add filters (app install needs you).
