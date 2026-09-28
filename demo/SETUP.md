@@ -1,41 +1,51 @@
 # Dev store setup (demo only)
 
-Everything here happens in **your dev store's admin**. Nothing in this folder ships with the theme.
-Files referenced below are in `demo/out/` (regenerate with `npm run demo`).
+Dev store: `origin-demo-hoqa85o7.myshopify.com` (set in `shopify.theme.toml`).
+Nothing in this folder ships with the theme.
 
-## Checklist
+## Automatic (recommended)
 
-1. **Currency + time zone.** Settings → General → *Store defaults*:
-   - Currency → **Philippine peso (PHP ₱)**. Do this before any test order; it can't change after.
-   - Time zone → **(GMT+08:00) Manila**. The drop countdown uses it.
-2. **One location.** Settings → Locations should list a single location (the default). The CSV's
-   *Inventory quantity* column only works on single-location stores.
-3. **Import products.** Products → **Import** → Add file → `demo/out/products.csv`
-   - Leave *Publish new products to all sales channels* checked.
-   - Click **Upload and preview**, check that it reads **177 products**, then **Import products**.
-   - Wait for Shopify's "import complete" email. The ~1,000 photos keep downloading in the
-     background for a few minutes after that.
-4. **Collections (14).** Follow `demo/out/collections.md`: each one is a *Smart* collection,
-   condition **Product tag is equal to `<handle>`**. Only 3 need their URL handle changed by hand
-   (HEAD WEAR → `shiesty`, Sweats → `sweat-pants`, Womens → `crops`).
-5. **Menus.** Content → Menus → edit **Main menu** and **Footer menu** to match `demo/out/menus.md`.
-6. **Filters.** Install **Shopify Search & Discovery** (free, made by Shopify) from the App Store →
-   Filters → add **Availability**, **Price**, **Size**, **WAISTLINE**.
-   Their size option is spelled `Size` on some products and `SIZE` on others. If the app lists
-   both, add both and give them the same label "Size". Rename WAISTLINE's label to "Waist".
-7. **Keep the store private.** Online Store → Preferences → **Password protection** stays on
-   (their product photos are on your store). `npm run dev` will ask for this storefront password.
-8. **Test checkout (optional, for later).** Settings → Payments → activate the **Bogus Gateway**,
-   and Settings → Shipping → make sure there's a rate for the Philippines.
+Products, collections and menus are seeded through the Admin API:
 
-Never publish a theme on this store for the demo: `npm run dev` previews the local theme without
-touching the live one.
+```bash
+npm run demo:seed
+```
+
+- Upserts all 177 products by handle (photos, sizes, prices, stock: sold-out variants = 0),
+  publishes them to the Online Store, creates the 14 smart collections with the exact handles,
+  and replaces the Main and Footer menus. Safe to re-run.
+- Only runs against the store in `shopify.theme.toml`, and refuses anything that isn't a
+  development store or looks like Origin's real store.
+- First time on a machine, authorize it once (opens the browser):
+  `npx shopify store auth --store origin-demo-hoqa85o7.myshopify.com --scopes read_products,write_products,read_inventory,write_inventory,read_locations,read_publications,write_publications,read_online_store_navigation,write_online_store_navigation`
+
+## Still manual (the Admin API can't do these)
+
+1. **Time zone → Manila.** Open
+   `https://admin.shopify.com/store/origin-demo-hoqa85o7/settings/general`, find **Time zone**
+   (under **Store defaults**), pick **(GMT+08:00) Manila**, click **Save**. The drop countdown uses it.
+2. **Filters.** Open `https://apps.shopify.com/search-and-discovery` → **Install** → choose the
+   `origin-demo` store → approve. In the app: **Filters → Add filter** → **Availability**,
+   **Price**, **Size**, **WAISTLINE**. If it lists both `Size` and `SIZE`, add both with the label
+   "Size". Rename WAISTLINE's label to "Waist".
+3. **Keep the store private.** Password protection stays on (their photos are on this store).
+   `npm run dev` asks for the storefront password, found at
+   `https://admin.shopify.com/store/origin-demo-hoqa85o7/online_store/preferences`.
+4. **Test checkout (optional, later).** Settings → Payments → activate the **Bogus Gateway**;
+   Settings → Shipping → make sure there's a rate for the Philippines.
+
+Currency is already PHP (store created with `--country PH`).
+
+## Manual fallback (no CLI)
+
+If the API route isn't available, the same data can be clicked in by hand:
+`demo/out/products.csv` (Products → Import), `demo/out/collections.md`, `demo/out/menus.md`.
 
 ## Refreshing the demo later
 
 ```bash
 npm run demo
+npm run demo:seed
 ```
 
-Re-fetches their public catalog, rebuilds `products.csv` and verifies it. To update stock on an
-already-imported store, re-import with **Overwrite products with matching handles** checked.
+Re-fetches their public catalog, rebuilds and verifies the CSV, then re-seeds the store.

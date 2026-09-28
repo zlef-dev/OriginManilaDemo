@@ -4,7 +4,7 @@
 |---|---|---|
 | 0 | Repo setup | ✅ Done |
 | 1 | Base: Horizon fork | ✅ Done |
-| 2 | Demo data | ✅ Done (import pending on you) |
+| 2 | Demo data | ✅ Done (store seeded) |
 | 3 | Brand system | — |
 | 4 | Commerce foundation | — |
 | 5 | Cinema core | — |
@@ -47,7 +47,12 @@
 - Store facts via Admin API: 1 location, Online Store channel present, 0 products, time zone America/New_York (needs Manila).
 - `demo/scripts/catalog.mjs` now holds the shared catalog rules; CSV output verified byte-identical after the refactor.
 
+### Dev store seeded (2026-09-28)
+- `npm run demo:seed` (Admin API, D-070): 177/177 products upserted and published, 14 smart collections with exact handles, Main + Footer menus.
+- Verified against the source snapshot: 177 products, 685 variants, 405 sold-out variants at 0 stock, 1,008 images, 0 per-product mismatches. Collection counts match the live site (1-of-none 47, hoodie 14, tee 25, …).
+- Fixed on the way: source variant positions have gaps (deleted variants), so the seed numbers them 1..n.
+- Storefront check: /collections/1-of-none shows 47 items with sold-out badges; menu renders; Availability + Price filters already work without the app.
+
 ## Waiting on you
-1. Decide: automated Admin API seeding (Claude writes + runs `demo/scripts/seed-store.mjs`) or manual `demo/SETUP.md` steps 3–5.
-2. Set time zone to Manila (Admin API can't).
-3. Install Shopify Search & Discovery and add filters (app install needs you).
+1. Time zone → Manila: https://admin.shopify.com/store/origin-demo-hoqa85o7/settings/general → Time zone → (GMT+08:00) Manila → Save.
+2. (Before step 4) Install Shopify Search & Discovery for the Size / Waist filters — steps in `demo/SETUP.md`.
