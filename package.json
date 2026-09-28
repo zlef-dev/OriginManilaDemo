@@ -9,7 +9,7 @@
   },
   "scripts": {
     "check": "shopify theme check --path theme",
-    "dev": "shopify theme dev --path theme",
+    "dev": "shopify theme dev -e dev",
     "package": "shopify theme package --path theme && node tools/move-zip.mjs",
     "demo:fetch": "node demo/scripts/fetch-catalog.mjs",
     "demo:csv": "node demo/scripts/build-csv.mjs",

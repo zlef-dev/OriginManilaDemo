@@ -1,0 +1,5 @@
+# Shopify CLI environments. `npm run dev` uses [environments.dev].
+# Dev store only — never point this at Origin Manila's real store.
+[environments.dev]
+store = "origin-demo-hoqa85o7.myshopify.com"
+path = "theme"

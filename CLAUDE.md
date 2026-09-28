@@ -14,7 +14,7 @@
 | Task | Command | Who runs it |
 |---|---|---|
 | Theme Check | `npm run check` | Claude, after every step (must be 0 errors) |
-| Local preview | `npm run dev -- --store <store>.myshopify.com` | User only (needs Shopify login) |
+| Local preview | `npm run dev` (dev store set in `shopify.theme.toml`) | User only (prompts for the storefront password) |
 | Mirror catalog | `npm run demo:fetch` | Claude |
 | Build product CSV | `npm run demo:csv` | Claude |
 | Verify CSV | `npm run demo:verify` | Claude |
