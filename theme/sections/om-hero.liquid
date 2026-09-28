@@ -1,0 +1,156 @@
+{%- comment -%}
+  Origin hero: huge headline, chrome logo in front, scroll = turn + fly through the logo's loop.
+  - The headline is real text (the LCP element). The vector chrome logo is the static fallback and
+    the first paint; WebGL replaces it after load + idle when the device can afford it.
+  - Intro (counter + flash) is CSS-timed and capped, plays once per session, skips on any input,
+    and never renders in the theme editor or for reduced motion (D-042).
+{%- endcomment -%}
+
+{{ 'om-cinema.css' | asset_url | stylesheet_tag }}
+{{ 'om-hero.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'om-hero.js' | asset_url }}" type="module"></script>
+
+{%- liquid
+  assign intro_ms = section.settings.intro_duration
+  assign gradient_id = 'om-chrome-' | append: section.id
+  assign use_3d = section.settings.enable_3d
+  if request.design_mode
+    assign show_intro = false
+  else
+    assign show_intro = section.settings.intro
+  endif
+-%}
+
+{%- if show_intro -%}
+  <script>
+    (function () {
+      try {
+        var root = document.documentElement;
+        if (sessionStorage.getItem('om-intro-seen') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        sessionStorage.setItem('om-intro-seen', '1');
+        root.classList.add('om-intro-on');
+        var events = ['keydown', 'pointerdown', 'wheel', 'touchstart'];
+        var end = function () {
+          root.classList.remove('om-intro-on');
+          events.forEach(function (name) { removeEventListener(name, end, true); });
+        };
+        events.forEach(function (name) { addEventListener(name, end, { capture: true, passive: true }); });
+        setTimeout(end, {{ intro_ms | plus: 150 }});
+      } catch (error) {}
+    })();
+  </script>
+{%- endif -%}
+
+<om-hero
+  class="om-scene om-hero"
+  style="--om-length-desktop: {{ section.settings.length_desktop }}svh; --om-length-mobile: {{ section.settings.length_mobile }}svh; --om-intro-ms: {{ intro_ms }}ms; --om-chrome: url(#{{ gradient_id }});"
+  data-webgl="{{ use_3d }}"
+  data-sparkles="{{ section.settings.sparkles }}"
+  data-tilt="{{ section.settings.tilt | divided_by: 100.0 }}"
+  data-logo-src="{{ 'logo.svg' | asset_url }}"
+>
+  <div class="om-stage om-grain om-hero__stage">
+    <h1 class="om-display om-hero__headline">{{ section.settings.headline | escape }}</h1>
+
+    <div class="om-hero__logo">
+      {%- if section.settings.fallback_image != blank -%}
+        {{
+          section.settings.fallback_image
+          | image_url: width: 1800
+          | image_tag:
+            class: 'om-hero__vector',
+            widths: '600, 900, 1200, 1800',
+            sizes: '(min-width: 990px) 60vw, 86vw',
+            loading: 'eager',
+            fetchpriority: 'high',
+            alt: ''
+        }}
+      {%- else -%}
+        <svg class="om-hero__gradient" aria-hidden="true" focusable="false" width="0" height="0">
+          <defs>
+            <linearGradient id="{{ gradient_id }}" x1="0" y1="0" x2="0.35" y2="1">
+              <stop offset="0" stop-color="#fbfbfd"/>
+              <stop offset="0.28" stop-color="#8b9099"/>
+              <stop offset="0.46" stop-color="#f4f5f7"/>
+              <stop offset="0.55" stop-color="#e3d7f2"/>
+              <stop offset="0.64" stop-color="#5a5f68"/>
+              <stop offset="0.82" stop-color="#dfe3ea"/>
+              <stop offset="1" stop-color="#8e949c"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="om-hero__vector" aria-hidden="true">{{ 'logo.svg' | inline_asset_content }}</div>
+      {%- endif -%}
+      {%- if use_3d -%}
+        <canvas class="om-hero__canvas" aria-hidden="true"></canvas>
+      {%- endif -%}
+    </div>
+
+    <div class="om-hero__meta">
+      {%- if section.settings.kicker != blank -%}
+        <p class="om-kicker">{{ section.settings.kicker | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.button_label != blank -%}
+        <a class="om-cta" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+          {{- section.settings.button_label | escape -}}
+        </a>
+      {%- endif -%}
+    </div>
+
+    <span class="om-hero__cue om-kicker" aria-hidden="true">{{ section.settings.scroll_cue | escape }}</span>
+    <div class="om-flash" aria-hidden="true"></div>
+  </div>
+
+  {%- if show_intro -%}
+    <div class="om-intro" aria-hidden="true">
+      <span class="om-intro__label om-kicker">{{ section.settings.intro_label | escape }}</span>
+      <span class="om-intro__count om-display"></span>
+    </div>
+  {%- endif -%}
+</om-hero>
+
+{% schema %}
+{
+  "name": "Origin hero",
+  "tag": "section",
+  "class": "om-section om-section--hero",
+  "enabled_on": { "templates": ["index"] },
+  "settings": [
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Origin Manila" },
+    { "type": "text", "id": "kicker", "label": "Kicker", "default": "Manila streetwear · One of none" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop the drop" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "text", "id": "scroll_cue", "label": "Scroll cue", "default": "Scroll" },
+    { "type": "header", "content": "Chrome logo" },
+    {
+      "type": "checkbox",
+      "id": "enable_3d",
+      "label": "3D chrome logo",
+      "default": true,
+      "info": "Loads after the page is ready, only on capable devices. Everyone else sees the chrome vector logo."
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_image",
+      "label": "Static logo image (optional)",
+      "info": "Replaces the built-in vector logo for no-3D visitors."
+    },
+    { "type": "range", "id": "sparkles", "label": "Sparkles", "min": 0, "max": 80, "step": 5, "default": 40 },
+    { "type": "range", "id": "tilt", "label": "Cursor tilt", "min": 0, "max": 100, "step": 10, "unit": "%", "default": 60 },
+    { "type": "header", "content": "Scroll" },
+    { "type": "range", "id": "length_desktop", "label": "Scroll length, desktop", "min": 120, "max": 300, "step": 10, "unit": "vh", "default": 200 },
+    { "type": "range", "id": "length_mobile", "label": "Scroll length, mobile", "min": 100, "max": 250, "step": 10, "unit": "vh", "default": 150 },
+    { "type": "header", "content": "Intro" },
+    {
+      "type": "checkbox",
+      "id": "intro",
+      "label": "Play intro",
+      "default": true,
+      "info": "Once per visit, any tap or key skips it. Never plays in the editor or with reduced motion."
+    },
+    { "type": "text", "id": "intro_label", "label": "Intro label", "default": "Origin" },
+    { "type": "range", "id": "intro_duration", "label": "Intro length", "min": 600, "max": 1200, "step": 100, "unit": "ms", "default": 1100 }
+  ],
+  "presets": [{ "name": "Origin hero" }]
+}
+{% endschema %}

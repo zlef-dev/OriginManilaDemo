@@ -1,0 +1,154 @@
+{%- comment -%}
+  Origin finale / drop mode.
+  - Drop date in the future → live countdown + email signup (Shopify customer form, normal POST:
+    bot protection may interject a challenge page, so no AJAX — D-044).
+  - Date passed → "Shop the drop". The server decides by `now`; the browser re-checks the clock and
+    flips on its own, so full-page caching can't show a stale state (D-045).
+  - No date → a typographic index of collections with live counts (D-043). On the password page the
+    index is skipped (its links sit behind the password).
+{%- endcomment -%}
+
+{{ 'om-drop.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'om-drop.js' | asset_url }}" type="module"></script>
+
+{%- liquid
+  assign drop_ts = 0
+  if section.settings.drop_date != blank
+    assign drop_ts = section.settings.drop_date | date: '%s' | plus: 0
+  endif
+  assign now_ts = 'now' | date: '%s' | plus: 0
+
+  if drop_ts > 0 and drop_ts > now_ts
+    assign state = 'countdown'
+  elsif drop_ts > 0
+    assign state = 'live'
+  else
+    assign state = 'index'
+  endif
+
+  if template.name == 'password' and state == 'index'
+    assign state = 'signup'
+  endif
+
+  assign drop_url = section.settings.drop_collection.url | default: routes.all_products_collection_url
+  assign form_id = 'om-drop-signup-' | append: section.id
+-%}
+
+<om-drop class="om-drop om-drop--{{ state }}" data-state="{{ state }}" data-target="{{ drop_ts }}">
+  <div class="om-drop__inner">
+    {%- if state == 'countdown' or state == 'live' -%}
+      <div class="om-drop__before"{% if state == 'live' %} hidden{% endif %}>
+        {%- if section.settings.kicker != blank -%}
+          <p class="om-drop__kicker">{{ section.settings.kicker | escape }}</p>
+        {%- endif -%}
+        <h2 class="om-drop__heading">{{ section.settings.heading_before | escape }}</h2>
+        <div class="om-drop__clock" role="timer" aria-live="off" aria-label="{{ section.settings.heading_before | escape }}">
+          {%- assign units = 'days,hours,minutes,seconds' | split: ',' -%}
+          {%- assign labels = section.settings.unit_labels | split: ',' -%}
+          {%- for unit in units -%}
+            <div class="om-drop__unit">
+              <span class="om-drop__value" data-unit="{{ unit }}">00</span>
+              <span class="om-drop__label">{{ labels[forloop.index0] | default: unit | strip | escape }}</span>
+            </div>
+          {%- endfor -%}
+        </div>
+        {%- if section.settings.date_label != blank -%}
+          <p class="om-drop__date">{{ section.settings.date_label | escape }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="om-drop__after"{% if state == 'countdown' %} hidden{% endif %}>
+        <h2 class="om-drop__heading om-drop__heading--live">{{ section.settings.heading_after | escape }}</h2>
+        <a class="om-drop__cta" href="{{ drop_url }}">{{ section.settings.button_after | escape }}</a>
+      </div>
+    {%- elsif state == 'index' -%}
+      <h2 class="om-drop__kicker">{{ section.settings.index_heading | escape }}</h2>
+      <ul class="om-drop__index" role="list">
+        {%- for collection in section.settings.index_collections -%}
+          <li>
+            <a class="om-drop__index-link" href="{{ collection.url }}">
+              <span class="om-drop__index-title">{{ collection.title | escape }}</span>
+              <span class="om-drop__index-count">{{ collection.all_products_count }}</span>
+            </a>
+          </li>
+        {%- else -%}
+          <li>
+            <a class="om-drop__index-link" href="{{ routes.all_products_collection_url }}">
+              <span class="om-drop__index-title">{{ section.settings.index_fallback | escape }}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if section.settings.show_signup and state != 'index' and state != 'live' -%}
+      {%- form 'customer', id: form_id, class: 'om-drop__form' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter,{{ section.settings.signup_tag | handleize }}">
+        {%- if form.posted_successfully? -%}
+          <p class="om-drop__success" role="status" tabindex="-1" autofocus>{{ section.settings.success_message | escape }}</p>
+        {%- else -%}
+          <label class="om-drop__field">
+            <span class="visually-hidden">{{ section.settings.email_placeholder | escape }}</span>
+            <input
+              type="email"
+              name="contact[email]"
+              required
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="{{ section.settings.email_placeholder | escape }}"
+              {% if form.errors %}
+                aria-invalid="true" aria-describedby="{{ form_id }}-error"
+              {% endif %}
+            >
+          </label>
+          <button type="submit" class="om-drop__submit">{{ section.settings.signup_button | escape }}</button>
+          {%- if form.errors -%}
+            <p class="om-drop__error" id="{{ form_id }}-error" role="alert">{{ form.errors | default_errors }}</p>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endform -%}
+      {%- if section.settings.fine_print != blank -%}
+        <p class="om-drop__fine">{{ section.settings.fine_print | escape }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+  <div class="om-flash om-drop__flash" aria-hidden="true"></div>
+</om-drop>
+
+{% schema %}
+{
+  "name": "Origin drop",
+  "tag": "section",
+  "class": "om-section om-section--drop",
+  "enabled_on": { "templates": ["index", "password"] },
+  "settings": [
+    {
+      "type": "text",
+      "id": "drop_date",
+      "label": "Drop date and time",
+      "info": "Format: 2026-10-10 20:00 +0800. Leave empty to show the collection index instead."
+    },
+    { "type": "text", "id": "date_label", "label": "Date line", "default": "Saturday · 8PM Manila time" },
+    { "type": "collection", "id": "drop_collection", "label": "Drop collection" },
+    { "type": "header", "content": "Before the drop" },
+    { "type": "text", "id": "kicker", "label": "Kicker", "default": "Drop mode" },
+    { "type": "text", "id": "heading_before", "label": "Heading", "default": "Next drop" },
+    { "type": "text", "id": "unit_labels", "label": "Clock labels", "default": "Days, Hrs, Min, Sec" },
+    { "type": "checkbox", "id": "show_signup", "label": "Email signup", "default": true },
+    { "type": "text", "id": "email_placeholder", "label": "Email placeholder", "default": "Email for the drop link" },
+    { "type": "text", "id": "signup_button", "label": "Signup button", "default": "Get the link" },
+    { "type": "text", "id": "signup_tag", "label": "Customer tag", "default": "drop", "info": "Added to signups (with \"newsletter\") so you can email them from Shopify Email." },
+    { "type": "text", "id": "success_message", "label": "Success message", "default": "You're on the list. Watch your inbox." },
+    { "type": "text", "id": "fine_print", "label": "Fine print", "default": "One email when it drops. Unsubscribe anytime." },
+    { "type": "header", "content": "After the drop" },
+    { "type": "text", "id": "heading_after", "label": "Heading", "default": "Shop the drop" },
+    { "type": "text", "id": "button_after", "label": "Button", "default": "Cop now" },
+    { "type": "header", "content": "No drop date" },
+    { "type": "text", "id": "index_heading", "label": "Index heading", "default": "Shop by category" },
+    { "type": "text", "id": "index_fallback", "label": "Fallback link", "default": "Shop all" },
+    { "type": "collection_list", "id": "index_collections", "label": "Collections", "limit": 16 }
+  ],
+  "presets": [{ "name": "Origin drop" }]
+}
+{% endschema %}

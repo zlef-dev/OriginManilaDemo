@@ -1,0 +1,188 @@
+/* Origin color run (homepage only). */
+
+.om-color-run__stage {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: clamp(4.5rem, 10svh, 7rem) clamp(1.25rem, 4vw, 4rem) 2rem;
+  background: var(--om-run-bg);
+  color: var(--om-run-ink, #f4f4f2);
+  transition:
+    background-color 600ms var(--om-ease-out),
+    color 600ms var(--om-ease-out);
+}
+
+.om-color-run__heading {
+  font-size: clamp(2.25rem, 7vw, 6.5rem);
+}
+
+.om-color-run__slides {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.om-color-run__slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 1.25rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(3rem) rotateY(-6deg);
+  transition:
+    opacity 450ms var(--om-ease-out),
+    transform 600ms var(--om-ease-out),
+    visibility 0s linear 600ms;
+}
+
+.om-color-run__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 450ms var(--om-ease-out),
+    transform 600ms var(--om-ease-out),
+    visibility 0s;
+}
+
+@media (min-width: 990px) {
+  .om-color-run__slide {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    justify-items: start;
+    gap: 4rem;
+  }
+}
+
+.om-color-run__media {
+  position: relative;
+  inline-size: min(100%, 34rem);
+  aspect-ratio: 3 / 4;
+  max-block-size: 58svh;
+  justify-self: center;
+}
+
+.om-color-run__media img,
+.om-color-run__placeholder {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2rem 3rem rgb(0 0 0 / 0.35));
+}
+
+.om-color-run__info {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+  text-align: center;
+  max-inline-size: 30rem;
+}
+
+@media (min-width: 990px) {
+  .om-color-run__info {
+    justify-items: start;
+    text-align: start;
+  }
+}
+
+.om-color-run__index {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.om-color-run__name {
+  margin: 0;
+  font-family: var(--om-font-display);
+  font-weight: 900;
+  font-size: clamp(1.4rem, 1rem + 1.6vw, 2.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.om-color-run__price {
+  margin: 0;
+  font-family: var(--font-accent--family);
+  font-weight: var(--font-accent--weight);
+  font-size: 1.1rem;
+}
+
+.om-color-run__cta {
+  color: var(--om-run-bg);
+  background: var(--om-run-ink, #f4f4f2);
+  border-color: var(--om-run-ink, #f4f4f2);
+}
+
+.om-color-run__cta:hover {
+  color: var(--om-run-ink, #f4f4f2);
+}
+
+.om-color-run__claimed {
+  font-family: var(--font-accent--family);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.om-color-run__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.om-color-run__dot {
+  inline-size: 0.6rem;
+  block-size: 0.6rem;
+  background: var(--om-dot);
+  outline: 1px solid currentColor;
+  opacity: 0.45;
+  transition: opacity var(--om-duration-ui) var(--om-ease-out), transform var(--om-duration-ui) var(--om-ease-out);
+}
+
+.om-color-run__dot.is-active {
+  opacity: 1;
+  transform: scale(1.4);
+}
+
+/* Static (reduced motion / editor): all colorways as a grid, each on its own color. */
+.om-static .om-color-run__stage {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+.om-static .om-color-run__slides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin-block-start: 2rem;
+}
+
+.om-static .om-color-run__slide {
+  position: relative;
+  inset: auto;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding: 1.5rem;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  background: var(--om-slide-bg);
+  color: var(--om-slide-ink);
+}
+
+.om-static .om-color-run__info {
+  justify-items: center;
+  text-align: center;
+}
+
+.om-static .om-color-run__dots {
+  display: none;
+}

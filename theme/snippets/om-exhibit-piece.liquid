@@ -1,0 +1,35 @@
+{%- doc -%}
+  One numbered piece in the Origin exhibit.
+
+  @param {product} product - The piece.
+  @param {number} index - 1-based position, shown as "No. 01".
+
+  @example
+  {% render 'om-exhibit-piece', product: product, index: forloop.index %}
+{%- enddoc -%}
+
+{%- if product != blank -%}
+  <li class="om-exhibit__piece">
+    <a class="om-exhibit__link" href="{{ product.url }}">
+      <div class="om-exhibit__media">
+        {%- if product.featured_image != blank -%}
+          {{
+            product.featured_image
+            | image_url: width: 900
+            | image_tag:
+              widths: '300, 450, 600, 900',
+              sizes: '(min-width: 990px) 24vw, 70vw',
+              loading: 'lazy',
+              alt: product.featured_image.alt | default: product.title
+          }}
+        {%- else -%}
+          {{ 'product-apparel-2' | placeholder_svg_tag }}
+        {%- endif -%}
+        {% render 'om-product-status', product: product, context: 'media' %}
+      </div>
+      <span class="om-exhibit__number om-kicker">No. {{ index | prepend: '0' | slice: -2, 2 }}</span>
+      <span class="om-exhibit__title">{{ product.title | escape }}</span>
+      <span class="om-exhibit__price">{{ product.price | money }}</span>
+    </a>
+  </li>
+{%- endif -%}

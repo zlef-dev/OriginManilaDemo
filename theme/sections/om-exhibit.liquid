@@ -1,0 +1,123 @@
+{%- comment -%}
+  Origin exhibit: a curated run of one-of-one pieces with a live "[claimed] of [total] claimed" stat.
+  - The stat counts the collection's published products from availability (never hard-coded, D-047).
+  - Desktop: sticky stage, the track slides sideways with scroll. Mobile: native swipe + snap (D-046).
+{%- endcomment -%}
+
+{{ 'om-cinema.css' | asset_url | stylesheet_tag }}
+{{ 'om-exhibit.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'om-exhibit.js' | asset_url }}" type="module"></script>
+
+{%- liquid
+  assign collection = section.settings.collection
+  assign limit = section.settings.count
+  assign total = 0
+  assign claimed = 0
+  assign available_pieces = ''
+  assign claimed_pieces = ''
+-%}
+
+{%- if collection != blank -%}
+  {%- paginate collection.products by 250 -%}
+    {%- for product in collection.products -%}
+      {%- liquid
+        assign total = total | plus: 1
+        if product.available
+          assign available_pieces = available_pieces | append: product.handle | append: ','
+        else
+          assign claimed = claimed | plus: 1
+          assign claimed_pieces = claimed_pieces | append: product.handle | append: ','
+        endif
+      -%}
+    {%- endfor -%}
+  {%- endpaginate -%}
+{%- endif -%}
+
+{%- liquid
+  if section.settings.order == 'available_first'
+    assign ordered_handles = available_pieces | append: claimed_pieces | split: ','
+  endif
+  assign count_span = '<span class="om-exhibit__count">' | append: claimed | append: '</span>'
+  assign stat_text = section.settings.stat_template | escape | replace: '[claimed]', count_span | replace: '[total]', total
+  assign see_all = section.settings.see_all_label | replace: '[total]', total
+-%}
+
+<om-exhibit class="om-scene om-exhibit" data-claimed="{{ claimed }}">
+  <div class="om-stage om-grain om-exhibit__stage">
+    <header class="om-exhibit__header">
+      <div>
+        {%- if section.settings.kicker != blank -%}
+          <p class="om-kicker">{{ section.settings.kicker | escape }}</p>
+        {%- endif -%}
+        <h2 class="om-display om-exhibit__heading">{{ section.settings.heading | default: collection.title | escape }}</h2>
+      </div>
+      {%- if section.settings.show_stat and total > 0 -%}
+        <p class="om-exhibit__stat">
+          <span class="visually-hidden">{{ section.settings.stat_template | replace: '[claimed]', claimed | replace: '[total]', total | escape }}</span>
+          <span aria-hidden="true">{{ stat_text }}</span>
+        </p>
+      {%- endif -%}
+    </header>
+
+    <div class="om-exhibit__viewport">
+      <ol class="om-exhibit__track" role="list">
+        {%- if collection != blank -%}
+          {%- if section.settings.order == 'available_first' -%}
+            {%- for handle in ordered_handles limit: limit -%}
+              {%- assign product = all_products[handle] -%}
+              {% render 'om-exhibit-piece', product: product, index: forloop.index %}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for product in collection.products limit: limit -%}
+              {% render 'om-exhibit-piece', product: product, index: forloop.index %}
+            {%- endfor -%}
+          {%- endif -%}
+          <li class="om-exhibit__end">
+            <a class="om-cta" href="{{ collection.url }}">{{ see_all | escape }}</a>
+          </li>
+        {%- else -%}
+          {%- for i in (1..4) -%}
+            <li class="om-exhibit__piece">
+              <div class="om-exhibit__media">{{ 'product-apparel-2' | placeholder_svg_tag }}</div>
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ol>
+    </div>
+  </div>
+</om-exhibit>
+
+{% schema %}
+{
+  "name": "Origin exhibit",
+  "tag": "section",
+  "class": "om-section om-section--exhibit",
+  "enabled_on": { "templates": ["index"] },
+  "settings": [
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "range", "id": "count", "label": "Pieces shown", "min": 1, "max": 12, "step": 1, "default": 8 },
+    {
+      "type": "select",
+      "id": "order",
+      "label": "Order",
+      "options": [
+        { "value": "collection", "label": "Collection order" },
+        { "value": "available_first", "label": "Available first" }
+      ],
+      "default": "available_first"
+    },
+    { "type": "text", "id": "kicker", "label": "Kicker", "default": "The archive" },
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Defaults to the collection title." },
+    { "type": "checkbox", "id": "show_stat", "label": "Show claimed stat", "default": true },
+    {
+      "type": "text",
+      "id": "stat_template",
+      "label": "Stat text",
+      "default": "[claimed] of [total] claimed",
+      "info": "[claimed] and [total] are filled in live."
+    },
+    { "type": "text", "id": "see_all_label", "label": "See all label", "default": "See all [total]" }
+  ],
+  "presets": [{ "name": "Origin exhibit" }]
+}
+{% endschema %}

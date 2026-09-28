@@ -1,0 +1,132 @@
+{%- comment -%}
+  Origin manifesto: full-bleed city video (or image, or a built-in city-lights gradient) and a
+  short manifesto that lights up word by word as you scroll. Words are split in Liquid (D-034);
+  screen readers get the sentence once from the visually hidden copy.
+{%- endcomment -%}
+
+{{ 'om-cinema.css' | asset_url | stylesheet_tag }}
+{{ 'om-manifesto.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'om-manifesto.js' | asset_url }}" type="module"></script>
+
+{%- liquid
+  assign blackletter_list = section.settings.blackletter_words | downcase | split: ','
+  assign uses_blackletter = false
+  if section.settings.blackletter_words != blank
+    assign uses_blackletter = true
+  endif
+  assign words = section.settings.text | strip_newlines | split: ' '
+-%}
+
+{%- if uses_blackletter -%}
+  {% style %}
+    @font-face {
+      font-family: 'OM Blackletter';
+      src: url('{{ 'om-blackletter.woff2' | asset_url }}') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+  {% endstyle %}
+{%- endif -%}
+
+<om-manifesto
+  class="om-scene om-manifesto"
+  style="--om-length-desktop: {{ section.settings.length_desktop }}svh; --om-length-mobile: {{ section.settings.length_mobile }}svh; --om-overlay: {{ section.settings.overlay | divided_by: 100.0 }};"
+>
+  <div class="om-stage om-grain om-manifesto__stage">
+    <div class="om-manifesto__media" aria-hidden="true">
+      {%- if section.settings.video != blank -%}
+        {{
+          section.settings.video
+          | video_tag:
+            class: 'om-manifesto__video',
+            muted: true,
+            loop: true,
+            playsinline: true,
+            preload: 'none',
+            image_size: '1600x'
+        }}
+      {%- elsif section.settings.image != blank -%}
+        {{
+          section.settings.image
+          | image_url: width: 2400
+          | image_tag:
+            class: 'om-manifesto__image',
+            widths: '750, 1100, 1600, 2400',
+            sizes: '100vw',
+            loading: 'lazy',
+            alt: ''
+        }}
+      {%- else -%}
+        <div class="om-manifesto__city"></div>
+      {%- endif -%}
+    </div>
+
+    <div class="om-manifesto__content">
+      {%- if section.settings.kicker != blank -%}
+        <p class="om-kicker">{{ section.settings.kicker | escape }}</p>
+      {%- endif -%}
+
+      <p class="om-manifesto__text">
+        <span class="visually-hidden">{{ section.settings.text | escape }}</span>
+        <span aria-hidden="true">
+          {%- for word in words -%}
+            {%- liquid
+              assign bare = word | downcase | remove: ',' | remove: '.' | remove: '!' | remove: '?' | remove: ';' | remove: ':' | strip
+              assign is_blackletter = false
+              for candidate in blackletter_list
+                assign candidate_clean = candidate | strip
+                if candidate_clean != blank and candidate_clean == bare
+                  assign is_blackletter = true
+                endif
+              endfor
+            -%}
+            <span class="om-word{% if is_blackletter %} om-blackletter{% endif %}">{{ word | escape }}</span>
+            {% unless forloop.last %} {% endunless %}
+          {%- endfor -%}
+        </span>
+      </p>
+
+      {%- if section.settings.button_label != blank -%}
+        <a class="om-cta om-manifesto__cta" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+          {{- section.settings.button_label | escape -}}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</om-manifesto>
+
+{% schema %}
+{
+  "name": "Origin manifesto",
+  "tag": "section",
+  "class": "om-section om-section--manifesto",
+  "enabled_on": { "templates": ["index"] },
+  "settings": [
+    { "type": "text", "id": "kicker", "label": "Kicker", "default": "Concrete Jungle" },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Manifesto",
+      "default": "Made in the concrete jungle. Cut for the night shift, the jeepney ride, the rooftop. One of none, never one of many. Manila wears it loud."
+    },
+    {
+      "type": "text",
+      "id": "blackletter_words",
+      "label": "Words in blackletter",
+      "default": "Manila",
+      "info": "One or two words from the manifesto, separated by commas."
+    },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop Concrete Jungle" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "header", "content": "Background" },
+    { "type": "video", "id": "video", "label": "Video", "info": "City at night works best. Muted, looped, plays only while on screen." },
+    { "type": "image_picker", "id": "image", "label": "Image", "info": "Used when there's no video. Without either, a city-lights gradient shows." },
+    { "type": "range", "id": "overlay", "label": "Darken background", "min": 0, "max": 90, "step": 5, "unit": "%", "default": 55 },
+    { "type": "header", "content": "Scroll" },
+    { "type": "range", "id": "length_desktop", "label": "Scroll length, desktop", "min": 100, "max": 250, "step": 10, "unit": "vh", "default": 160 },
+    { "type": "range", "id": "length_mobile", "label": "Scroll length, mobile", "min": 100, "max": 200, "step": 10, "unit": "vh", "default": 130 }
+  ],
+  "presets": [{ "name": "Origin manifesto" }]
+}
+{% endschema %}

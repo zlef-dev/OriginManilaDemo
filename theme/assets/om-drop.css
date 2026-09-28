@@ -1,0 +1,204 @@
+/* Origin drop / finale (homepage + password page). No GSAP. */
+
+.om-drop {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-block-size: 100svh;
+  padding: clamp(4rem, 10svh, 7rem) clamp(1.25rem, 4vw, 4rem);
+  overflow: hidden;
+  background:
+    radial-gradient(60% 50% at 50% 55%, rgb(var(--color-foreground-rgb) / 0.07), transparent 70%),
+    var(--color-background);
+  color: var(--color-foreground);
+}
+
+.om-drop__inner {
+  display: grid;
+  justify-items: center;
+  gap: 1.75rem;
+  inline-size: min(100%, 72rem);
+  text-align: center;
+}
+
+.om-drop__before,
+.om-drop__after {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+}
+
+.om-drop [hidden] {
+  display: none;
+}
+
+.om-drop__kicker {
+  margin: 0;
+  font-family: var(--font-accent--family);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground-rgb) / 0.72);
+}
+
+.om-drop__heading {
+  margin: 0;
+  font-family: var(--om-font-display);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 9vw, 8rem);
+  line-height: 0.86;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.om-drop__clock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.5rem, 2vw, 2rem);
+}
+
+.om-drop__unit {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.om-drop__value {
+  font-family: var(--om-font-display);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 10vw, 8.5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, #ffffff 0%, #a7acb4 45%, #f4f4f2 55%, #6b7079 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.om-drop__label,
+.om-drop__date,
+.om-drop__fine {
+  margin: 0;
+  font-family: var(--font-accent--family);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground-rgb) / 0.72);
+}
+
+.om-drop__cta,
+.om-drop__submit {
+  padding: 1em 1.6em;
+  font-family: var(--font-accent--family);
+  font-weight: var(--font-accent--weight);
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--color-background);
+  background: var(--color-foreground);
+  border: 1px solid var(--color-foreground);
+  cursor: pointer;
+}
+
+.om-drop__form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  inline-size: min(100%, 32rem);
+}
+
+.om-drop__field {
+  flex: 1 1 14rem;
+}
+
+.om-drop__field input {
+  inline-size: 100%;
+  padding: 1em 1.1em;
+  font: inherit;
+  color: var(--color-foreground);
+  background: transparent;
+  border: 1px solid rgb(var(--color-foreground-rgb) / 0.55);
+}
+
+.om-drop__field input:focus-visible,
+.om-drop__submit:focus-visible,
+.om-drop__cta:focus-visible,
+.om-drop__index-link:focus-visible {
+  outline: 2px solid var(--color-foreground);
+  outline-offset: 3px;
+}
+
+.om-drop__error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--om-stamp-color);
+}
+
+.om-drop__success {
+  margin: 0;
+  font-family: var(--font-accent--family);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Index state */
+.om-drop__index {
+  display: grid;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid rgb(var(--color-foreground-rgb) / 0.2);
+}
+
+.om-drop__index-link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.4em;
+  color: inherit;
+  text-decoration: none;
+  border-block-end: 1px solid rgb(var(--color-foreground-rgb) / 0.2);
+}
+
+.om-drop__index-title {
+  font-family: var(--om-font-display);
+  font-weight: 900;
+  font-size: clamp(1.6rem, 5vw, 4.5rem);
+  line-height: 1;
+  text-transform: uppercase;
+  transition: letter-spacing var(--om-duration-ui) var(--om-ease-out);
+}
+
+.om-drop__index-link:hover .om-drop__index-title {
+  letter-spacing: 0.02em;
+}
+
+.om-drop__index-count {
+  font-family: var(--font-accent--family);
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--color-foreground-rgb) / 0.72);
+}
+
+/* Flip flash (JS adds .is-flipping at T-0). */
+.om-drop.is-flipping .om-drop__flash {
+  animation: om-drop-flash 420ms ease-out;
+}
+
+@keyframes om-drop-flash {
+  0% { opacity: 0; }
+  25% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .om-drop.is-flipping .om-drop__flash {
+    animation: none;
+  }
+
+  .om-drop__index-title {
+    transition: none;
+  }
+}

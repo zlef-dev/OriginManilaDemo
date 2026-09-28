@@ -1,0 +1,150 @@
+/* Origin exhibit (homepage only). */
+
+.om-exhibit__stage {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 2rem;
+  padding-block: clamp(4.5rem, 10svh, 7rem) 2.5rem;
+}
+
+.om-exhibit__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+.om-exhibit__heading {
+  font-size: clamp(2.5rem, 8vw, 7.5rem);
+}
+
+/* The stat as a stamped sticker. */
+.om-exhibit__stat {
+  margin: 0;
+  padding: 0.55em 0.9em 0.5em;
+  font-family: var(--om-font-display);
+  font-weight: 900;
+  font-size: clamp(0.85rem, 0.6rem + 0.8vw, 1.2rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--om-stamp-color);
+  border: 0.16em solid currentColor;
+  outline: 0.07em solid currentColor;
+  outline-offset: 0.2em;
+  transform: rotate(-4deg);
+}
+
+.om-exhibit__count {
+  font-variant-numeric: tabular-nums;
+}
+
+.om-exhibit__viewport {
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.om-exhibit__track {
+  display: flex;
+  gap: clamp(1rem, 2vw, 2rem);
+  block-size: 100%;
+  margin: 0;
+  padding: 0 clamp(1.25rem, 4vw, 4rem);
+  list-style: none;
+  will-change: transform;
+}
+
+.om-exhibit__piece {
+  flex: 0 0 clamp(15rem, 24vw, 22rem);
+}
+
+.om-exhibit__link {
+  display: grid;
+  gap: 0.4rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.om-exhibit__link:focus-visible {
+  outline: 2px solid var(--color-foreground);
+  outline-offset: 4px;
+}
+
+.om-exhibit__media {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+.om-exhibit__media img,
+.om-exhibit__media svg {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.om-exhibit__media:has(.om-stamp--dim) img {
+  filter: grayscale(0.55) brightness(0.72);
+}
+
+.om-exhibit__number {
+  margin-block-start: 0.4rem;
+}
+
+.om-exhibit__title {
+  font-family: var(--font-accent--family);
+  font-weight: var(--font-accent--weight);
+  text-transform: uppercase;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.om-exhibit__price {
+  font-size: 0.875rem;
+  color: rgb(var(--color-foreground-rgb) / 0.72);
+}
+
+.om-exhibit__end {
+  flex: 0 0 clamp(14rem, 20vw, 18rem);
+  display: grid;
+  place-items: center;
+}
+
+/* Mobile and static: native horizontal swipe with snap, no scroll hijack (D-046). */
+@media (max-width: 989px) {
+  .om-exhibit.om-scene {
+    block-size: auto;
+  }
+
+  .om-exhibit .om-stage {
+    position: relative;
+    block-size: auto;
+  }
+
+  .om-exhibit__viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .om-exhibit__piece,
+  .om-exhibit__end {
+    flex-basis: 72vw;
+    scroll-snap-align: center;
+  }
+}
+
+.om-static .om-exhibit__viewport {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.om-static .om-exhibit__piece {
+  scroll-snap-align: start;
+}

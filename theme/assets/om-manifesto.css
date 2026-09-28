@@ -1,0 +1,73 @@
+/* Origin manifesto (homepage only). */
+
+.om-manifesto__stage {
+  display: grid;
+  place-items: center;
+}
+
+.om-manifesto__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.om-manifesto__media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / var(--om-overlay, 0.55));
+}
+
+.om-manifesto__video,
+.om-manifesto__image,
+.om-manifesto__city {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  transform-origin: 50% 50%;
+}
+
+/* Built-in "city at night": blurred bokeh lights, no download. */
+.om-manifesto__city {
+  background:
+    radial-gradient(circle at 12% 70%, rgb(255 170 60 / 0.55) 0 2%, transparent 9%),
+    radial-gradient(circle at 26% 64%, rgb(255 90 70 / 0.5) 0 1.5%, transparent 7%),
+    radial-gradient(circle at 44% 76%, rgb(120 170 255 / 0.45) 0 2%, transparent 10%),
+    radial-gradient(circle at 63% 62%, rgb(255 210 120 / 0.5) 0 1.5%, transparent 8%),
+    radial-gradient(circle at 78% 72%, rgb(255 60 110 / 0.45) 0 2%, transparent 9%),
+    radial-gradient(circle at 90% 58%, rgb(140 230 255 / 0.4) 0 1.5%, transparent 7%),
+    linear-gradient(180deg, #05060a 0%, #0c0f1a 55%, #1b1320 100%);
+  filter: blur(6px) saturate(1.2);
+}
+
+.om-manifesto__content {
+  display: grid;
+  justify-items: start;
+  gap: 1.5rem;
+  inline-size: min(100% - 3rem, 62rem);
+}
+
+.om-manifesto__text {
+  margin: 0;
+  font-family: var(--om-font-display);
+  font-weight: 900;
+  font-size: clamp(1.75rem, 1rem + 3.4vw, 4.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  text-wrap: pretty;
+}
+
+.om-word {
+  display: inline;
+  opacity: 0.16;
+}
+
+.om-word.om-blackletter {
+  font-size: 1.15em;
+}
+
+.om-static .om-word,
+.om-manifesto:not(:defined) .om-word {
+  opacity: 1;
+}

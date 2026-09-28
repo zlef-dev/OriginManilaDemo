@@ -1,0 +1,165 @@
+/* Origin hero (homepage only). */
+
+.om-hero__stage {
+  display: grid;
+  place-items: center;
+}
+
+.om-hero__headline {
+  position: absolute;
+  z-index: 1;
+  max-inline-size: 7ch;
+  font-size: clamp(3.25rem, 14vw, 14rem);
+  text-align: center;
+  text-wrap: balance;
+  color: var(--color-foreground);
+  transform-origin: 50% 50%;
+}
+
+.om-hero__logo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.om-hero__vector {
+  inline-size: min(78vw, 58rem);
+  block-size: auto;
+  color: #d9dce2;
+  filter: drop-shadow(0 1.5rem 3rem rgb(0 0 0 / 0.6));
+  transition: opacity 500ms var(--om-ease-out);
+}
+
+.om-hero__vector svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.om-hero__vector path {
+  fill: var(--om-chrome, currentColor);
+}
+
+.om-hero__gradient {
+  position: absolute;
+}
+
+.om-hero__canvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  transition: opacity 500ms var(--om-ease-out);
+}
+
+/* WebGL has drawn its first frame: crossfade vector → 3D. */
+.om-hero.is-3d .om-hero__canvas {
+  opacity: 1;
+}
+
+.om-hero.is-3d .om-hero__vector {
+  opacity: 0;
+}
+
+.om-hero__meta {
+  position: absolute;
+  inset-block-end: max(2.5rem, 7svh);
+  inset-inline: 0;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding-inline: 1.5rem;
+  text-align: center;
+}
+
+.om-hero__cue {
+  position: absolute;
+  inset-block-end: 1rem;
+  inset-inline-end: 1.5rem;
+  z-index: 3;
+}
+
+@media (max-width: 989px) {
+  .om-hero__cue {
+    display: none;
+  }
+}
+
+/* ---------- Homepage headroom (set by om-hero.js, D-032) ---------- */
+
+header-group > header {
+  transition: translate var(--om-duration-ui) var(--om-ease-out);
+}
+
+.om-header-hidden header-group > header:not(:focus-within) {
+  translate: 0 -100%;
+}
+
+/* ---------- Intro: counter + camera flash (CSS-timed, D-042) ---------- */
+
+@property --om-count {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+.om-intro {
+  display: none;
+}
+
+.om-intro-on .om-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  background: #000;
+  color: #f4f4f2;
+  animation: om-intro-hide 1ms linear var(--om-intro-ms, 1100ms) forwards;
+}
+
+.om-intro-on .om-intro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: om-intro-flash calc(var(--om-intro-ms, 1100ms) * 0.2) ease-out calc(var(--om-intro-ms, 1100ms) * 0.8) both;
+}
+
+.om-intro__count {
+  font-size: clamp(4rem, 22vw, 14rem);
+  font-variant-numeric: tabular-nums;
+  counter-reset: om-count var(--om-count);
+  animation: om-count calc(var(--om-intro-ms, 1100ms) * 0.78) cubic-bezier(0.6, 0, 0.2, 1) forwards;
+}
+
+.om-intro__count::after {
+  content: counter(om-count, decimal-leading-zero);
+}
+
+@keyframes om-count {
+  to {
+    --om-count: 100;
+  }
+}
+
+@keyframes om-intro-flash {
+  0% { opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+@keyframes om-intro-hide {
+  to {
+    visibility: hidden;
+    opacity: 0;
+  }
+}
