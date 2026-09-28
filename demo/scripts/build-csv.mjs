@@ -7,65 +7,29 @@
 //   collections.md     the 14 smart collections to create, with exact handles
 //   menus.md           main + footer menu trees
 //   catalog-report.md  counts, sold-out ratios and data issues found in their catalog
+//
+// The same rules drive seed-store.mjs (automatic import); they live in catalog.mjs.
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { toCsv } from './shopify-csv.mjs';
+import {
+  FOOTER_MENU,
+  MAIN_MENU,
+  OUT_DIR,
+  cleanWeight,
+  compareAtFor,
+  imageAlt,
+  isSoldOut,
+  loadCatalog,
+  stockFor,
+  tagsFor,
+} from './catalog.mjs';
 
-const DATA_DIR = join('demo', 'data');
-const OUT_DIR = join('demo', 'out');
-
-// Available variants get this stock; sold-out variants get 0 (DECISIONS.md D-063).
-const ONE_OF_ONE_HANDLE = '1-of-none';
-const STOCK_ONE_OF_ONE = 1;
-const STOCK_DEFAULT = 6;
-
-// Weights above this are data-entry errors on the source store (one variant is 500 kg).
-// They would break weight-based shipping rates in test checkouts, so they are left blank
-// and listed in the report (D-065).
-const MAX_PLAUSIBLE_GRAMS = 30000;
-
-// Menu trees for the dev store (demo only; the theme reads whatever menu the owner assigns).
-const MAIN_MENU = [
-  { handle: 'new' },
-  { handle: '1-of-none' },
-  { title: 'Tops', url: '/collections/all', children: ['hoodie', 'long-sleeve', 'tee', 'polo', 'tank-top'] },
-  { title: 'Bottoms', url: '/collections/all', children: ['oe-jeans', 'sweat-pants', 'shorts'] },
-  { handle: 'shiesty' },
-  { handle: 'crops' },
-  {
-    title: 'More',
-    url: '/collections/all',
-    children: ['underwear', 'accessories'],
-    extra: [{ title: 'Shop all', url: '/collections/all' }],
-  },
-];
-const FOOTER_MENU = [
-  { title: 'Shop all', url: '/collections/all' },
-  { handle: 'new' },
-  { handle: '1-of-none' },
-  { title: 'Search', url: '/search' },
-];
-
-const readJson = (name) => JSON.parse(readFileSync(join(DATA_DIR, name), 'utf8'));
-
-const collections = readJson('collections.json');
-const products = readJson('products.json');
-const membership = readJson('collection-products.json');
-const snapshot = readJson('snapshot.json');
-
+const { collections, products, productsOldestFirst, membership, snapshot, productCollections } = loadCatalog();
 const collectionByHandle = new Map(collections.map((collection) => [collection.handle, collection]));
 
-// product handle -> collection handles, in collections.json order
-const productCollections = new Map(products.map((product) => [product.handle, []]));
-for (const collection of collections) {
-  for (const productHandle of membership[collection.handle] || []) {
-    productCollections.get(productHandle)?.push(collection.handle);
-  }
-}
-
 const bool = (value) => (value ? 'TRUE' : 'FALSE');
-const isSoldOut = (product) => product.variants.every((variant) => !variant.available);
 
 /** Shopify's automatic handle for a title (what the admin fills in before you edit it). */
 function autoHandle(title) {
@@ -78,12 +42,9 @@ function autoHandle(title) {
     .replace(/^-+|-+$/g, '');
 }
 
-const issues = { heavyWeights: [] };
+const heavyWeights = [];
 
 function productRows(product) {
-  const collectionHandles = productCollections.get(product.handle) || [];
-  const tags = [...new Set([...collectionHandles, ...product.tags])];
-  const isOneOfOne = collectionHandles.includes(ONE_OF_ONE_HANDLE);
   const rowCount = Math.max(product.variants.length, product.images.length, 1);
   const rows = [];
 
@@ -96,7 +57,7 @@ function productRows(product) {
         Description: product.body_html,
         Vendor: product.vendor,
         Type: product.product_type,
-        Tags: tags.join(', '),
+        Tags: tagsFor(product, productCollections).join(', '),
         'Published on online store': 'TRUE',
         Status: 'active',
         'Gift card': 'FALSE',
@@ -108,13 +69,8 @@ function productRows(product) {
 
     const variant = product.variants[i];
     if (variant) {
-      let weight = variant.grams;
-      if (weight > MAX_PLAUSIBLE_GRAMS) {
-        issues.heavyWeights.push(`${product.title} / ${variant.title}: ${weight} g`);
-        weight = '';
-      }
-      const compareAt = Number(variant.compare_at_price) > Number(variant.price) ? variant.compare_at_price : '';
-      const stock = variant.available ? (isOneOfOne ? STOCK_ONE_OF_ONE : STOCK_DEFAULT) : 0;
+      const weight = cleanWeight(variant);
+      if (weight === null) heavyWeights.push(`${product.title} / ${variant.title}: ${variant.grams} g`);
 
       Object.assign(row, {
         SKU: variant.sku,
@@ -122,13 +78,13 @@ function productRows(product) {
         'Option2 value': variant.option2 ?? '',
         'Option3 value': variant.option3 ?? '',
         Price: variant.price,
-        'Compare-at price': compareAt,
+        'Compare-at price': compareAtFor(variant) ?? '',
         'Charge tax': bool(variant.taxable),
         'Inventory tracker': 'shopify',
-        'Inventory quantity': stock,
+        'Inventory quantity': stockFor(product, variant, productCollections),
         'Continue selling when out of stock': 'DENY',
-        'Weight value (grams)': weight,
-        'Weight unit for display': weight === '' ? '' : 'g',
+        'Weight value (grams)': weight ?? '',
+        'Weight unit for display': weight === null ? '' : 'g',
         'Requires shipping': bool(variant.requires_shipping),
         'Fulfillment service': 'manual',
         'Variant image URL': variant.featured_image_src || '',
@@ -140,7 +96,7 @@ function productRows(product) {
       Object.assign(row, {
         'Product image URL': image.src,
         'Image position': image.position,
-        'Image alt text': image.alt || (i === 0 ? product.title : `${product.title}, view ${i + 1}`),
+        'Image alt text': imageAlt(product, image, i),
       });
     }
 
@@ -149,10 +105,7 @@ function productRows(product) {
   return rows;
 }
 
-// Oldest first: import creates products in row order, so the admin's "Newest" sort ends up
-// close to the source store's own newest-first order.
-const ordered = [...products].sort((a, b) => String(a.published_at).localeCompare(String(b.published_at)));
-const csvRows = ordered.flatMap(productRows);
+const csvRows = productsOldestFirst.flatMap(productRows);
 
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(join(OUT_DIR, 'products.csv'), toCsv(csvRows));
@@ -274,9 +227,7 @@ const report = [
   `- Empty descriptions: ${emptyDescriptions.length}`,
   `- Products in no collection: ${orphans.length}${orphans.length ? ` (${orphans.map((p) => p.title).join('; ')})` : ''}`,
   `- Longest titles: ${longest.map((p) => `"${p.title}" (${p.title.length})`).join('; ')}`,
-  `- Implausible weights left blank in the CSV: ${
-    issues.heavyWeights.length ? issues.heavyWeights.join('; ') : 'none'
-  }`,
+  `- Implausible weights left blank in the CSV: ${heavyWeights.length ? heavyWeights.join('; ') : 'none'}`,
   '',
 ];
 writeFileSync(join(OUT_DIR, 'catalog-report.md'), report.join('\n'));
@@ -284,4 +235,4 @@ writeFileSync(join(OUT_DIR, 'catalog-report.md'), report.join('\n'));
 console.log(
   `products.csv: ${products.length} products, ${allVariants.length} variants, ${csvRows.length} rows → ${OUT_DIR}/`
 );
-if (issues.heavyWeights.length) console.log(`Blanked implausible weights: ${issues.heavyWeights.length}`);
+if (heavyWeights.length) console.log(`Blanked implausible weights: ${heavyWeights.length}`);

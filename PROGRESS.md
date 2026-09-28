@@ -3,7 +3,7 @@
 | # | Step | Status |
 |---|---|---|
 | 0 | Repo setup | ✅ Done |
-| 1 | Base: Horizon fork | ✅ Done (preview check pending on you) |
+| 1 | Base: Horizon fork | ✅ Done |
 | 2 | Demo data | ✅ Done (import pending on you) |
 | 3 | Brand system | — |
 | 4 | Commerce foundation | — |
@@ -39,6 +39,13 @@
 - `demo/SETUP.md`: the admin checklist.
 - Findings worth pitching: 45% of products sold out; option names spelled 6+ ways (`Size`, `SIZE`, `Clor`…); product type blank on all 177; 23 empty descriptions; 5 products in no collection; one variant weighs 500 kg.
 - Theme Check: unchanged (no theme files touched in this step).
+
+### Dev store connected (2026-09-28)
+- Dev store: `origin-demo-hoqa85o7.myshopify.com` (created with `shopify store create dev`, country PH). Saved in `shopify.theme.toml`; `npm run dev` targets it.
+- Preview checked at 1280px and 375px: stock Horizon renders, prices in ₱, no horizontal scroll. Currency is already PHP.
+- Console: 0 theme errors. 3 platform errors (customer-account menu lookup, Shop Pay iframe CSP on the 127.0.0.1 proxy, one 400 from a Shopify script); re-check on the real preview URL in QA.
+- Store facts via Admin API: 1 location, Online Store channel present, 0 products, time zone America/New_York (needs Manila).
+- `demo/scripts/catalog.mjs` now holds the shared catalog rules; CSV output verified byte-identical after the refactor.
 
 ## Waiting on you
 1. Tell me your dev store domain (`something.myshopify.com`).
