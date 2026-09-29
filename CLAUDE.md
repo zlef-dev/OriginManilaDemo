@@ -14,6 +14,7 @@
 | Task | Command | Who runs it |
 |---|---|---|
 | Theme Check | `npm run check` | Claude, after every step (must be 0 errors) |
+| JS syntax check | `npm run check:js` | Claude, after touching any `om-*.js` |
 | Local preview | `npm run dev` (dev store set in `shopify.theme.toml`) | User only (prompts for the storefront password) |
 | Mirror catalog | `npm run demo:fetch` | Claude |
 | Build product CSV | `npm run demo:csv` | Claude |

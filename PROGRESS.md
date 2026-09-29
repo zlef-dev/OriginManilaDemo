@@ -86,5 +86,11 @@
 - Scroll: logo recedes/floats up → "ORIGIN MANILA" + "IN THE TRAP WE shine" → returns → fly-through (D-096). Checked at 38/64/90% on desktop and the hold on mobile (no overlap).
 - Copy de-cornified (D-098). Theme Check: 0 errors.
 
+### Hero docking + Concrete Jungle line (2026-09-29)
+- Scroll now flies the chrome logo into the header's ★ ORIGIN lockup (D-099); alignment measured at 1px on desktop. The lockup shows on every page; shopping pages still load no GSAP/three.
+- "In the trap we shine" is the Concrete Jungle climax (D-100).
+- Fixed: a JS syntax error that disabled the 3D logo (added `npm run check:js`, D-101); "MANILA" splitting on mobile (D-102).
+- Theme Check 0 errors; 7/7 modules parse.
+
 ## Waiting on you
 - Review the homepage at http://127.0.0.1:9292 and the pitch notes in docs/INSTALL-ORIGIN.md.
