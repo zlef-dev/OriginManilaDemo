@@ -40,6 +40,8 @@
   "
   {{ block.shopify_attributes }}
 >
+  {%- comment -%} OM: chrome star mark beside the store name (the homepage hero logo docks here). {%- endcomment -%}
+  {% render 'om-header-mark' %}
   {% liquid
     assign logo_width = settings.logo_height | times: settings.logo.aspect_ratio | ceil
     assign logo_width_mobile = settings.logo_height_mobile | times: settings.logo.aspect_ratio | ceil

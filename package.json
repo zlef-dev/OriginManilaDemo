@@ -17,7 +17,8 @@
     "demo": "npm run demo:fetch && npm run demo:csv && npm run demo:verify",
     "demo:seed": "node demo/scripts/seed-store.mjs",
     "trace:logo": "node tools/trace-logo.mjs",
-    "vendor": "node tools/vendor.mjs"
+    "vendor": "node tools/vendor.mjs",
+    "check:js": "node tools/check-js.mjs"
   },
   "devDependencies": {
     "@shopify/cli": "4.8.2",

@@ -1,12 +1,12 @@
 // Origin 3D chrome logo (homepage hero only; loaded after page load + idle, never on shopping pages).
 //
-// - Extrudes assets/logo.svg with a soft bevel (the mark is two simple shapes, so runtime
-//   extrusion is a few ms — see DECISIONS D-022).
+// - Extrudes assets/logo.svg with a soft bevel (two simple shapes: a few ms, D-027).
 // - Polished chrome with a touch of iridescence, lit by a procedural studio environment (no HDR).
 // - ✦ sparkles: additive point sprites with a per-point twinkle, drawn in the shader.
-// - Fly-through: the swoosh + star leave an almost-closed loop. We rasterize the mark, find the
-//   point in that loop with the most clearance (the "counter"), and fly the camera along the axis
-//   through it. The near plane is far smaller than that clearance, so the camera never clips.
+// - Enters with one 360° turn. While the hero scrolls, the DOM moves the whole canvas into the
+//   header (om-hero.js); here the logo just turns face-on so it lands flat, matching the header
+//   mark (D-099). `setFit()` sizes the mark to exactly the vector fallback's box, so the vector,
+//   the 3D logo and the header mark share one geometry.
 // - Capped pixel ratio, renders only while visible, frame-time watchdog, full dispose().
 
 import {
@@ -33,66 +33,7 @@ import {
 } from './vendor-three.js';
 
 const LOGO_WIDTH = 4; // world units
-const CAMERA_START_Z = 9;
-const CAMERA_END_Z = -2;
-
-/**
- * Finds the most open point inside the logo's (almost) enclosed loop, in SVG coordinates.
- * Raster approach: occupancy grid → keep empty cells that are walled in on ≥6 of 8 directions →
- * pick the one farthest from any ink. Returns { x, y, radius }.
- */
-function findLoopCenter(pathData, viewBox) {
-  const [vx, vy, vw, vh] = viewBox;
-  const cols = 120;
-  const rows = Math.round((cols * vh) / vw);
-  const canvas = document.createElement('canvas');
-  canvas.width = cols;
-  canvas.height = rows;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.scale(cols / vw, rows / vh);
-  ctx.translate(-vx, -vy);
-  ctx.fill(new Path2D(pathData), 'evenodd');
-  const pixels = ctx.getImageData(0, 0, cols, rows).data;
-  const ink = (x, y) => x >= 0 && y >= 0 && x < cols && y < rows && pixels[(y * cols + x) * 4 + 3] > 127;
-
-  const inkCells = [];
-  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (ink(x, y)) inkCells.push([x, y]);
-
-  const directions = [
-    [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1],
-  ];
-  const walled = (x, y) => {
-    let hits = 0;
-    for (const [dx, dy] of directions) {
-      for (let step = 1; step < cols; step++) {
-        const px = x + dx * step;
-        const py = y + dy * step;
-        if (px < 0 || py < 0 || px >= cols || py >= rows) break;
-        if (ink(px, py)) {
-          hits++;
-          break;
-        }
-      }
-    }
-    return hits >= 6;
-  };
-
-  let best = null;
-  for (let y = 1; y < rows - 1; y += 1) {
-    for (let x = 1; x < cols - 1; x += 1) {
-      if (ink(x, y) || !walled(x, y)) continue;
-      let nearest = Infinity;
-      for (const [ix, iy] of inkCells) {
-        const d = (ix - x) ** 2 + (iy - y) ** 2;
-        if (d < nearest) nearest = d;
-      }
-      if (!best || nearest > best.d) best = { x, y, d: nearest };
-    }
-  }
-  if (!best) return { x: vx + vw / 2, y: vy + vh / 2, radius: 0 };
-  const cell = vw / cols;
-  return { x: vx + (best.x + 0.5) * cell, y: vy + (best.y + 0.5) * cell, radius: Math.sqrt(best.d) * cell };
-}
+const SPIN_MS = 1600;
 
 const sparkleVertex = /* glsl */ `
   attribute float aPhase;
@@ -125,10 +66,13 @@ const sparkleFragment = /* glsl */ `
 /**
  * @param {HTMLCanvasElement} canvas
  * @param {string} svgText - contents of assets/logo.svg
- * @param {{ mobile: boolean, sparkles: number, tilt: number, onFirstFrame?: () => void, onSlow?: () => void }} options
+ * @param {{ mobile: boolean, sparkles: number, tilt: number, fit: number, entranceSpin?: boolean,
+ *   onFirstFrame?: () => void, onSlow?: () => void }} options
+ *   fit = the logo's width as a fraction of the canvas width (matches the vector fallback).
  */
 export function createChromeLogo(canvas, svgText, options) {
   const { mobile, sparkles = 40, tilt = 1, entranceSpin = true, onFirstFrame, onSlow } = options;
+  let fit = options.fit || 0.6;
 
   const renderer = new WebGLRenderer({
     canvas,
@@ -146,8 +90,7 @@ export function createChromeLogo(canvas, svgText, options) {
   const environment = pmrem.fromScene(new RoomEnvironment(), 0.035).texture;
   scene.environment = environment;
 
-  const camera = new PerspectiveCamera(30, 1, 0.01, 100);
-  camera.position.set(0, 0, CAMERA_START_Z);
+  const camera = new PerspectiveCamera(30, 1, 0.1, 200);
 
   // ---------- geometry ----------
   const svg = new SVGLoader().parse(svgText);
@@ -183,28 +126,18 @@ export function createChromeLogo(canvas, svgText, options) {
   });
 
   const logo = new Group();
-  const mesh = new Mesh(geometry, material);
-  logo.add(mesh);
+  logo.add(new Mesh(geometry, material));
   scene.add(logo);
-
-  // ---------- fly-through target (from the loop "counter") ----------
-  const viewBox = (svgText.match(/viewBox="([^"]+)"/)?.[1] || '0 0 100 100').split(/[\s,]+/).map(Number);
-  const pathData = svgText.match(/ d="([^"]+)"/)?.[1] || '';
-  const loop = findLoopCenter(pathData, viewBox);
-  const target = new Vector3((loop.x - center.x) * scale, -(loop.y - center.y) * scale, 0);
-  const clearance = loop.radius * scale; // world units
-  // Near-plane half-diagonal must stay inside the clearance (minus the bevel) — assert it.
-  const halfDiagonal = camera.near * Math.tan(MathUtils.degToRad(camera.fov / 2)) * Math.hypot(1, 3);
-  const safe = clearance - 9 * scale > halfDiagonal;
 
   // ---------- sparkles ----------
   const sparkleCount = mobile ? Math.round(sparkles / 2) : sparkles;
   const positions = [];
   const phases = [];
   const sizes = [];
-  const half = new Vector3(size.x * scale, size.y * scale, 0).multiplyScalar(0.5);
+  const halfW = (size.x * scale) / 2;
+  const halfH = (size.y * scale) / 2;
   while (positions.length / 3 < sparkleCount) {
-    positions.push(MathUtils.randFloatSpread(half.x * 2.1), MathUtils.randFloatSpread(half.y * 2.1), 0.2 + Math.random() * 0.3);
+    positions.push(MathUtils.randFloatSpread(halfW * 2.1), MathUtils.randFloatSpread(halfH * 2.1), 0.2 + Math.random() * 0.3);
     phases.push(Math.random());
     sizes.push(10 + Math.random() * 16);
   }
@@ -223,7 +156,7 @@ export function createChromeLogo(canvas, svgText, options) {
   logo.add(new Points(sparkleGeometry, sparkleMaterial));
 
   // ---------- state ----------
-  let progress = 0;
+  let progress = 0; // 0 = centered hero pose, 1 = docked in the header
   const pointer = { x: 0, y: 0 };
   const eased = { x: 0, y: 0 };
   let running = false;
@@ -233,34 +166,31 @@ export function createChromeLogo(canvas, svgText, options) {
   let sampled = 0;
   let last = performance.now();
   const startTime = last;
-  // Entrance: one full 360° turn when the 3D logo first appears (skipped if already scrolled).
-  const SPIN_MS = 1600;
   let spinStart = null;
+
+  /** Camera distance that makes the logo span `fit` of the canvas width. */
+  function placeCamera() {
+    const halfFov = MathUtils.degToRad(camera.fov / 2);
+    camera.position.set(0, 0, LOGO_WIDTH / (fit * 2 * Math.tan(halfFov) * camera.aspect));
+    camera.lookAt(0, 0, 0);
+  }
 
   function resize() {
     const { clientWidth: width, clientHeight: height } = canvas;
     if (!width || !height) return;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
-    // keep the whole mark in frame on narrow screens
-    camera.position.z = CAMERA_START_Z * Math.max(1, 1.25 / camera.aspect);
     camera.updateProjectionMatrix();
+    placeCamera();
   }
 
   function render(now) {
     const delta = Math.min(now - last, 100);
     last = now;
 
-    // Scroll phases (must match the DOM timeline in om-hero.js):
-    // 0 → 0.28   recede: the logo pulls back and floats up, uncovering the headline + quote
-    // 0.28 → 0.5 hold on "ORIGIN MANILA"
-    // 0.5 → 0.7  come back, turn face-on, line up with the loop
-    // 0.66 → 1   accelerating dolly; crosses the logo plane at ~97%, on the flash cut
-    const recede = MathUtils.smoothstep(progress, 0, 0.28) * (1 - MathUtils.smoothstep(progress, 0.5, 0.68));
-    const turn = MathUtils.smoothstep(progress, 0.5, 0.7);
-    const dollyT = MathUtils.clamp((progress - 0.66) / 0.34, 0, 1);
-    const dolly = dollyT * dollyT;
-    const tiltWeight = (1 - turn) * tilt;
+    // Face-on by the time it reaches the header, so it lands flat like the header mark.
+    const settle = MathUtils.smoothstep(progress, 0, 0.8);
+    const tiltWeight = (1 - settle) * tilt;
 
     eased.x += (pointer.x - eased.x) * Math.min(1, delta / 120);
     eased.y += (pointer.y - eased.y) * Math.min(1, delta / 120);
@@ -269,25 +199,14 @@ export function createChromeLogo(canvas, svgText, options) {
     let spin = 0;
     if (spinStart !== null) {
       const t = Math.min(1, (now - spinStart) / SPIN_MS);
-      spin = (1 - (1 - t) ** 3 - 1) * Math.PI * 2; // −2π → 0, ease-out cubic
+      spin = -((1 - t) ** 3) * Math.PI * 2; // −2π → 0, ease-out cubic
       if (t === 1) spinStart = null;
     }
 
-    const startZ = CAMERA_START_Z * Math.max(1, 1.25 / camera.aspect);
-    const pulledZ = startZ * (1 + recede);
-    // Lift in world units at the logo plane: ~62% of the visible half-height at that distance,
-    // which parks the (now smaller) mark above the headline.
-    const lift = recede * pulledZ * Math.tan(MathUtils.degToRad(camera.fov / 2)) * 0.62;
-
     logo.rotation.y =
-      MathUtils.lerp(-0.42 + Math.sin(idle * 0.5) * 0.06, 0, turn) + eased.x * 0.25 * tiltWeight + spin;
-    logo.rotation.x = MathUtils.lerp(0.14, 0, turn) - eased.y * 0.18 * tiltWeight;
-    logo.position.y = Math.sin(idle * 0.9) * 0.05 * (1 - turn) + lift;
-
-    camera.position.x = MathUtils.lerp(0, target.x, turn);
-    camera.position.y = MathUtils.lerp(0, target.y, turn);
-    camera.position.z = MathUtils.lerp(pulledZ, safe ? CAMERA_END_Z : 1.2, dolly);
-    camera.lookAt(camera.position.x, camera.position.y, camera.position.z - 1);
+      MathUtils.lerp(-0.42 + Math.sin(idle * 0.5) * 0.06, 0, settle) + eased.x * 0.25 * tiltWeight + spin;
+    logo.rotation.x = MathUtils.lerp(0.14, 0, settle) - eased.y * 0.18 * tiltWeight;
+    logo.position.y = Math.sin(idle * 0.9) * 0.05 * (1 - settle);
 
     sparkleMaterial.uniforms.uTime.value = idle;
     renderer.render(scene, camera);
@@ -310,10 +229,15 @@ export function createChromeLogo(canvas, svgText, options) {
   resize();
 
   return {
-    loop: { ...loop, safe },
     setProgress(value) {
       progress = MathUtils.clamp(value, 0, 1);
       if (!running) render(performance.now());
+    },
+    setFit(value) {
+      if (value > 0) {
+        fit = value;
+        placeCamera();
+      }
     },
     setPointer(x, y) {
       pointer.x = x;

@@ -1,5 +1,8 @@
-// Origin hero: scroll choreography + lazy 3D chrome logo.
+// Origin hero: the chrome logo docks into the header as you scroll (D-099), plus the lazy 3D logo.
 import { OmSection, gsap, afterLoadIdle, prefersReducedMotion, queueRefresh, MOBILE } from './om-cinema.js';
+
+const DOCK_END = 0.6; // share of the hero's scroll spent flying into the header
+const HANDOFF = 0.05; // crossfade to the header mark over the last bit of the flight
 
 /** Cheap, conservative gate: WebGL only where it can hold the frame budget (D-025). */
 function canAfford3D() {
@@ -11,21 +14,49 @@ function canAfford3D() {
   return true;
 }
 
+/** Where the logo lands: the header's chrome star, else the uploaded logo image, else the logo link. */
+function findDockTarget() {
+  // By priority, not document order (the link is an ancestor of the mark).
+  for (const selector of ['[data-om-dock-target]', 'header .header-logo__image', 'header .header-logo']) {
+    const match = [...document.querySelectorAll(selector)].find((element) => element.getClientRects().length > 0);
+    if (match) return match;
+  }
+  return null;
+}
+
 class OmHero extends OmSection {
   setup() {
     this.logo = null;
     this.progress = 0;
-    const title = this.querySelector('.om-hero__title');
+    this.docked = false;
+    this.visible = true;
+    this.stage = this.querySelector('.om-hero__stage');
+    this.wrapper = this.querySelector('.om-hero__logo');
+    this.vector = this.querySelector('.om-hero__vector');
     const headline = this.querySelector('.om-hero__headline');
-    // Empty array when the quote setting is blank, so GSAP doesn't warn about a missing target.
-    const quote = this.querySelector('.om-hero__quote') || [];
-    const meta = this.querySelector('.om-hero__meta');
     const cue = this.querySelector('.om-hero__cue');
-    const vector = this.querySelector('.om-hero__vector');
-    const flash = this.querySelector('.om-flash');
 
     this.animate((scroller) => {
-      const root = document.documentElement;
+      const target = findDockTarget();
+
+      /**
+       * Transform that puts the logo exactly on the header target *once docked*: the header is
+       * stuck at the top of the viewport and the sticky stage fills it, so both are measured in
+       * viewport space. Function-based, recomputed on every ScrollTrigger refresh (resize, fonts).
+       */
+      const dock = () => {
+        if (!target || !this.vector) return { x: 0, y: -this.stage.clientHeight * 0.6, scale: 0.08 };
+        const targetRect = target.getBoundingClientRect();
+        const header = target.closest('header');
+        const headerTop = header ? header.getBoundingClientRect().top : 0;
+        const stageLeft = this.stage.getBoundingClientRect().left;
+        return {
+          x: targetRect.left + targetRect.width / 2 - (stageLeft + this.stage.clientWidth / 2),
+          y: targetRect.top - headerTop + targetRect.height / 2 - this.stage.clientHeight / 2,
+          scale: targetRect.width / this.vector.offsetWidth,
+        };
+      };
+
       const timeline = gsap.timeline({
         defaults: { ease: 'none' },
         scrollTrigger: {
@@ -33,42 +64,60 @@ class OmHero extends OmSection {
           scroller,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 0.8,
-          onUpdate: (trigger) => {
-            this.progress = trigger.progress;
-            this.logo?.setProgress(trigger.progress);
-            // Homepage-only headroom (D-032): hide the header while flying forward, show it on
-            // any scroll back up. Shopping pages keep Horizon's always-visible header.
-            root.classList.toggle('om-header-hidden', trigger.direction === 1 && trigger.progress > 0.04);
-          },
-          onLeave: () => root.classList.remove('om-header-hidden'),
-          onLeaveBack: () => root.classList.remove('om-header-hidden'),
+          scrub: 0.6,
+          invalidateOnRefresh: true,
+          onUpdate: (trigger) => this.onProgress(trigger.progress),
         },
       });
-      // Phases match om-chrome-logo.js: recede 0–0.28, hold to 0.5, return 0.5–0.7, fly 0.66–1.
+
       timeline
         .to(cue, { opacity: 0, duration: 0.06 }, 0)
-        // the title settles a touch lower while the logo floats up
-        .to(title, { y: '6svh', duration: 0.28, ease: 'power1.out' }, 0)
-        .fromTo(quote, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.14, ease: 'power2.out' }, 0.12)
-        .to(meta, { opacity: 0, y: -24, duration: 0.12 }, 0.44)
-        .to(quote, { opacity: 0, duration: 0.1 }, 0.5)
-        .to(title, { y: 0, duration: 0.18 }, 0.5)
-        .to(headline, { scale: 1.4, opacity: 0, duration: 0.2 }, 0.56)
-        // No-WebGL version of the same path: up and away, back, then rush past the camera.
-        .to(vector, { yPercent: -95, scale: 0.55, duration: 0.28, ease: 'power1.inOut' }, 0)
-        .to(vector, { yPercent: 0, scale: 1, duration: 0.18, ease: 'power1.inOut' }, 0.5)
-        .to(vector, { scale: 9, opacity: 0, duration: 0.28, ease: 'power2.in' }, 0.69)
-        .to(flash, { opacity: 0.85, duration: 0.02 }, 0.955)
-        .to(flash, { opacity: 0, duration: 0.035 }, 0.975)
-        .set({}, {}, 1);
+        .to(
+          this.wrapper,
+          {
+            x: () => dock().x,
+            y: () => dock().y,
+            scale: () => dock().scale,
+            duration: DOCK_END,
+            ease: 'power3.inOut',
+          },
+          0
+        )
+        .fromTo(headline, { letterSpacing: '-0.03em' }, { letterSpacing: '0.01em', duration: DOCK_END, ease: 'power2.out' }, 0)
+        .to(this.wrapper, { opacity: 0, duration: HANDOFF }, DOCK_END - HANDOFF);
 
-      return () => root.classList.remove('om-header-hidden');
+      if (target) {
+        timeline.fromTo(target, { opacity: 0 }, { opacity: 1, duration: HANDOFF }, DOCK_END - HANDOFF);
+      }
+      timeline.set({}, {}, 1);
+
+      return () => this.setDocked(false);
     });
 
     if (this.dataset.webgl === 'true' && this.querySelector('canvas') && canAfford3D()) {
       this.loadWebGL();
     }
+  }
+
+  onProgress(progress) {
+    this.progress = progress;
+    this.logo?.setProgress(Math.min(1, progress / DOCK_END));
+    this.setDocked(progress >= DOCK_END);
+  }
+
+  /** Once docked, the header mark carries the logo: stop rendering WebGL until we scroll back. */
+  setDocked(docked) {
+    if (docked === this.docked) return;
+    this.docked = docked;
+    this.classList.toggle('is-docked', docked);
+    if (docked) this.logo?.stop();
+    else if (this.visible) this.logo?.start();
+  }
+
+  fitFraction() {
+    const canvas = this.querySelector('canvas');
+    if (!canvas || !this.vector || !canvas.clientWidth) return 0.6;
+    return this.vector.offsetWidth / canvas.clientWidth;
   }
 
   async loadWebGL() {
@@ -93,6 +142,7 @@ class OmHero extends OmSection {
         mobile: window.matchMedia(MOBILE).matches,
         sparkles: Number(this.dataset.sparkles) || 0,
         tilt: Number(this.dataset.tilt) || 0,
+        fit: this.fitFraction(),
         onFirstFrame: () => {
           this.classList.add('is-3d');
           queueRefresh();
@@ -103,11 +153,16 @@ class OmHero extends OmSection {
       console.warn('[om-hero] WebGL failed, keeping the vector logo', error);
       return;
     }
-    this.logo.setProgress(this.progress);
+    this.logo.setProgress(Math.min(1, this.progress / DOCK_END));
 
-    // Render only while the hero is on screen.
+    // Keep the 3D mark exactly the size of the vector (and so of the header mark) on resize.
+    this.fitObserver = new ResizeObserver(() => this.logo?.setFit(this.fitFraction()));
+    this.fitObserver.observe(this.vector);
+
+    // Render only while the hero is on screen and the logo hasn't docked.
     this.visibility = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) this.logo?.start();
+      this.visible = entry.isIntersecting;
+      if (this.visible && !this.docked) this.logo?.start();
       else this.logo?.stop();
     });
     this.visibility.observe(this);
@@ -125,6 +180,7 @@ class OmHero extends OmSection {
 
   dropWebGL() {
     this.visibility?.disconnect();
+    this.fitObserver?.disconnect();
     this.logo?.dispose();
     this.logo = null;
     this.classList.remove('is-3d');

@@ -32,6 +32,30 @@
   overflow: hidden;
 }
 
+/* ---------- Header lockup: chrome star + store name ---------- */
+
+.header-logo:has(.om-header-mark) {
+  gap: 0.5em;
+  font-family: var(--om-font-display);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.om-header-mark {
+  display: block;
+  flex: none;
+  inline-size: auto;
+  block-size: 1.55rem;
+  filter: drop-shadow(0 0 0.4rem rgb(255 255 255 / 0.14));
+}
+
+@media screen and (min-width: 750px) {
+  .om-header-mark {
+    block-size: 1.8rem;
+  }
+}
+
 /* ---------- Sold-out stamp ---------- */
 
 .om-stamp {

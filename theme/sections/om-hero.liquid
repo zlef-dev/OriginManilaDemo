@@ -1,11 +1,11 @@
 {%- comment -%}
-  Origin hero: huge headline, chrome logo in front. Scroll = the logo recedes and floats up to
-  reveal the headline + quote, holds, comes back, turns face-on and the camera flies through the
-  logo's loop (D-029, D-096).
+  Origin hero: huge headline with the chrome logo in front. Scrolling docks the logo into the
+  header: it shrinks, turns face-on and flies to the header's chrome star, then hands off to it
+  (D-099). What's left is "ORIGIN MANILA" with the shop button.
   - The headline is real text (the LCP element). The vector chrome logo is the static fallback and
     the first paint; WebGL replaces it after load + idle when the device can afford it, entering
     with one 360° turn.
-  - Intro loader: the chrome logo spins 360° with a small counter, then a flash. CSS-timed, ≤1.5 s,
+  - Loading intro: the chrome logo spins 360° with a small counter, then a flash. CSS-timed, ≤1.5 s,
     once per session, any input skips it; never in the theme editor or with reduced motion (D-042).
 {%- endcomment -%}
 
@@ -22,22 +22,7 @@
   else
     assign show_intro = section.settings.intro
   endif
-
-  assign quote_words = section.settings.quote | split: ' '
-  assign quote_accent = section.settings.quote_accent | downcase | strip
 -%}
-
-{%- if section.settings.quote_accent != blank and section.settings.quote != blank -%}
-  {% style %}
-    @font-face {
-      font-family: 'OM Blackletter';
-      src: url('{{ 'om-blackletter.woff2' | asset_url }}') format('woff2');
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-  {% endstyle %}
-{%- endif -%}
 
 {%- if show_intro -%}
   <script>
@@ -84,22 +69,7 @@
   {%- endif -%}
 
   <div class="om-stage om-grain om-hero__stage">
-    <div class="om-hero__title">
-      <h1 class="om-display om-hero__headline">{{ section.settings.headline | escape }}</h1>
-      {%- if section.settings.quote != blank -%}
-        <p class="om-hero__quote">
-          {%- for word in quote_words -%}
-            {%- assign bare = word | downcase | remove: '.' | remove: ',' | remove: '!' -%}
-            {%- if quote_accent != blank and bare == quote_accent -%}
-              <span class="om-blackletter om-hero__quote-accent">{{ word | escape }}</span>
-            {%- else -%}
-              {{ word | escape }}
-            {%- endif -%}
-            {% unless forloop.last %} {% endunless %}
-          {%- endfor -%}
-        </p>
-      {%- endif -%}
-    </div>
+    <h1 class="om-display om-hero__headline">{{ section.settings.headline | escape }}</h1>
 
     <div class="om-hero__logo">
       {%- if section.settings.fallback_image != blank -%}
@@ -134,7 +104,6 @@
     </div>
 
     <span class="om-hero__cue om-kicker" aria-hidden="true">{{ section.settings.scroll_cue | escape }}</span>
-    <div class="om-flash" aria-hidden="true"></div>
   </div>
 
   {%- if show_intro -%}
@@ -159,20 +128,6 @@
   "enabled_on": { "templates": ["index"] },
   "settings": [
     { "type": "text", "id": "headline", "label": "Headline", "default": "Origin Manila" },
-    {
-      "type": "text",
-      "id": "quote",
-      "label": "Quote",
-      "default": "In the trap we shine",
-      "info": "Revealed under the headline as the logo pulls back."
-    },
-    {
-      "type": "text",
-      "id": "quote_accent",
-      "label": "Quote word in blackletter",
-      "default": "shine",
-      "info": "One word from the quote. Leave empty for none."
-    },
     { "type": "text", "id": "kicker", "label": "Kicker", "default": "Manila · One of none" },
     { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop the drop" },
     { "type": "url", "id": "button_link", "label": "Button link" },
@@ -193,9 +148,13 @@
     },
     { "type": "range", "id": "sparkles", "label": "Sparkles", "min": 0, "max": 80, "step": 5, "default": 40 },
     { "type": "range", "id": "tilt", "label": "Cursor tilt", "min": 0, "max": 100, "step": 10, "unit": "%", "default": 60 },
+    {
+      "type": "paragraph",
+      "content": "On scroll, the logo flies into the header's chrome star (Theme settings → Origin → Header). If a logo image is uploaded instead, it flies to that."
+    },
     { "type": "header", "content": "Scroll" },
-    { "type": "range", "id": "length_desktop", "label": "Scroll length, desktop", "min": 160, "max": 360, "step": 10, "unit": "vh", "default": 280 },
-    { "type": "range", "id": "length_mobile", "label": "Scroll length, mobile", "min": 120, "max": 300, "step": 10, "unit": "vh", "default": 220 },
+    { "type": "range", "id": "length_desktop", "label": "Scroll length, desktop", "min": 120, "max": 260, "step": 10, "unit": "vh", "default": 170 },
+    { "type": "range", "id": "length_mobile", "label": "Scroll length, mobile", "min": 110, "max": 220, "step": 10, "unit": "vh", "default": 150 },
     { "type": "header", "content": "Loading intro" },
     {
       "type": "checkbox",

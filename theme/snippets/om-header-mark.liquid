@@ -1,0 +1,19 @@
+{%- doc -%}
+  Chrome star mark shown beside the store name in the header when no logo image is uploaded.
+  On the homepage, the hero's 3D logo flies into this exact spot (om-hero.js docks onto
+  [data-om-dock-target]). A cached <img>, so it costs one small request site-wide.
+
+  @example
+  {% render 'om-header-mark' %}
+{%- enddoc -%}
+
+{%- if settings.om_header_mark and settings.logo == blank -%}
+  <img
+    class="om-header-mark"
+    src="{{ 'logo-chrome.svg' | asset_url }}"
+    width="1479"
+    height="933"
+    alt=""
+    data-om-dock-target
+  >
+{%- endif -%}

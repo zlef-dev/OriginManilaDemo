@@ -27,6 +27,17 @@
       },
       {
         "type": "header",
+        "content": "Header"
+      },
+      {
+        "type": "checkbox",
+        "id": "om_header_mark",
+        "label": "Chrome star beside the store name",
+        "default": true,
+        "info": "Shown when no logo image is uploaded. On the homepage, the hero logo flies into it as you scroll."
+      },
+      {
+        "type": "header",
         "content": "Sold-out stamp"
       },
       {

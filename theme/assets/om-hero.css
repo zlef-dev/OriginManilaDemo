@@ -11,54 +11,23 @@
   block-size: 0;
 }
 
-/* ---------- Headline + quote ---------- */
-
-.om-hero__title {
-  position: absolute;
-  z-index: 1;
-  display: grid;
-  justify-items: center;
-  gap: clamp(0.75rem, 2svh, 1.5rem);
-  padding-inline: 1rem;
-  text-align: center;
-}
+/* ---------- Headline ---------- */
 
 .om-hero__headline {
-  max-inline-size: 7ch;
-  font-size: clamp(3.25rem, 14vw, 14rem);
+  position: absolute;
+  z-index: 1;
+  inline-size: min(100%, 11ch);
+  font-size: clamp(2.5rem, 13vw, 14rem);
+  text-align: center;
   text-wrap: balance;
+  /* Horizon breaks long words in headings; a brand name must never split mid-word. */
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
   color: var(--color-foreground);
-  transform-origin: 50% 50%;
 }
 
-/* The quote: quiet, wide-tracked, chrome — one word in blackletter. No quote marks. */
-.om-hero__quote {
-  margin: 0;
-  font-family: var(--font-accent--family);
-  font-weight: var(--font-accent--weight);
-  font-size: clamp(0.8rem, 0.6rem + 0.9vw, 1.35rem);
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  background: linear-gradient(180deg, #ffffff 0%, #b9bec6 48%, #f4f4f2 52%, #7d828b 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  opacity: 0;
-}
-
-.om-hero__quote-accent {
-  font-size: 1.9em;
-  letter-spacing: 0.02em;
-  line-height: 0;
-  vertical-align: -0.12em;
-}
-
-.om-static .om-hero__quote,
-.om-hero:not(:defined) .om-hero__quote {
-  opacity: 1;
-}
-
-/* ---------- Logo ---------- */
+/* ---------- Logo (the whole wrapper docks into the header, D-099) ---------- */
 
 .om-hero__logo {
   position: absolute;
@@ -67,6 +36,12 @@
   display: grid;
   place-items: center;
   pointer-events: none;
+  transform-origin: 50% 50%;
+}
+
+/* Docked: the header's chrome star has taken over. */
+.om-hero.is-docked .om-hero__logo {
+  visibility: hidden;
 }
 
 .om-hero__vector {
@@ -133,16 +108,6 @@
   .om-hero__cue {
     display: none;
   }
-}
-
-/* ---------- Homepage headroom (set by om-hero.js, D-032) ---------- */
-
-header-group > header {
-  transition: translate var(--om-duration-ui) var(--om-ease-out);
-}
-
-.om-header-hidden header-group > header:not(:focus-within) {
-  translate: 0 -100%;
 }
 
 /* ---------- Loading intro: the logo spins 360°, counter, flash (CSS-timed, D-042) ---------- */

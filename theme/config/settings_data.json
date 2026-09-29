@@ -106,7 +106,8 @@
     "om_one_of_one_label": "Only 1 exists",
     "om_card_sheen": true,
     "add_to_cart_animation": true,
-    "auto_open_cart_drawer": true
+    "auto_open_cart_drawer": true,
+    "om_header_mark": true
   },
   "presets": {
     "Default": {
@@ -206,7 +207,8 @@
       "om_one_of_one_label": "Only 1 exists",
       "om_card_sheen": true,
       "add_to_cart_animation": true,
-      "auto_open_cart_drawer": true
+      "auto_open_cart_drawer": true,
+      "om_header_mark": true
     }
   }
 }
