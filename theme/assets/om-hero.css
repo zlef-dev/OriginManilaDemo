@@ -5,16 +5,60 @@
   place-items: center;
 }
 
-.om-hero__headline {
+.om-hero__gradient {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+}
+
+/* ---------- Headline + quote ---------- */
+
+.om-hero__title {
   position: absolute;
   z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.75rem, 2svh, 1.5rem);
+  padding-inline: 1rem;
+  text-align: center;
+}
+
+.om-hero__headline {
   max-inline-size: 7ch;
   font-size: clamp(3.25rem, 14vw, 14rem);
-  text-align: center;
   text-wrap: balance;
   color: var(--color-foreground);
   transform-origin: 50% 50%;
 }
+
+/* The quote: quiet, wide-tracked, chrome — one word in blackletter. No quote marks. */
+.om-hero__quote {
+  margin: 0;
+  font-family: var(--font-accent--family);
+  font-weight: var(--font-accent--weight);
+  font-size: clamp(0.8rem, 0.6rem + 0.9vw, 1.35rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #ffffff 0%, #b9bec6 48%, #f4f4f2 52%, #7d828b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0;
+}
+
+.om-hero__quote-accent {
+  font-size: 1.9em;
+  letter-spacing: 0.02em;
+  line-height: 0;
+  vertical-align: -0.12em;
+}
+
+.om-static .om-hero__quote,
+.om-hero:not(:defined) .om-hero__quote {
+  opacity: 1;
+}
+
+/* ---------- Logo ---------- */
 
 .om-hero__logo {
   position: absolute;
@@ -33,18 +77,16 @@
   transition: opacity 500ms var(--om-ease-out);
 }
 
-.om-hero__vector svg {
+.om-hero__vector svg,
+.om-intro__logo svg {
   display: block;
   inline-size: 100%;
   block-size: auto;
 }
 
-.om-hero__vector path {
+.om-hero__vector path,
+.om-intro__logo path {
   fill: var(--om-chrome, currentColor);
-}
-
-.om-hero__gradient {
-  position: absolute;
 }
 
 .om-hero__canvas {
@@ -65,6 +107,8 @@
 .om-hero.is-3d .om-hero__vector {
   visibility: hidden;
 }
+
+/* ---------- CTA + cue ---------- */
 
 .om-hero__meta {
   position: absolute;
@@ -101,7 +145,7 @@ header-group > header {
   translate: 0 -100%;
 }
 
-/* ---------- Intro: counter + camera flash (CSS-timed, D-042) ---------- */
+/* ---------- Loading intro: the logo spins 360°, counter, flash (CSS-timed, D-042) ---------- */
 
 @property --om-count {
   syntax: '<integer>';
@@ -120,10 +164,23 @@ header-group > header {
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   background: #000;
   color: #f4f4f2;
-  animation: om-intro-hide 1ms linear var(--om-intro-ms, 1100ms) forwards;
+  perspective: 900px;
+  animation: om-intro-hide 1ms linear var(--om-intro-ms, 1400ms) forwards;
+}
+
+.om-intro__logo {
+  inline-size: min(56vw, 22rem);
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 1rem 2rem rgb(255 255 255 / 0.08));
+  animation: om-intro-spin calc(var(--om-intro-ms, 1400ms) * 0.82) cubic-bezier(0.55, 0, 0.2, 1) both;
+}
+
+.om-intro__logo img {
+  inline-size: 100%;
+  block-size: auto;
 }
 
 .om-intro-on .om-intro::after {
@@ -132,18 +189,26 @@ header-group > header {
   inset: 0;
   background: #fff;
   opacity: 0;
-  animation: om-intro-flash calc(var(--om-intro-ms, 1100ms) * 0.2) ease-out calc(var(--om-intro-ms, 1100ms) * 0.8) both;
+  animation: om-intro-flash calc(var(--om-intro-ms, 1400ms) * 0.18) ease-out calc(var(--om-intro-ms, 1400ms) * 0.82) both;
 }
 
 .om-intro__count {
-  font-size: clamp(4rem, 22vw, 14rem);
   font-variant-numeric: tabular-nums;
   counter-reset: om-count var(--om-count);
-  animation: om-count calc(var(--om-intro-ms, 1100ms) * 0.78) cubic-bezier(0.6, 0, 0.2, 1) forwards;
+  animation: om-count calc(var(--om-intro-ms, 1400ms) * 0.8) cubic-bezier(0.6, 0, 0.2, 1) forwards;
 }
 
 .om-intro__count::after {
   content: counter(om-count, decimal-leading-zero);
+}
+
+@keyframes om-intro-spin {
+  from {
+    transform: rotateY(-360deg) scale(0.86);
+  }
+  to {
+    transform: rotateY(0deg) scale(1);
+  }
 }
 
 @keyframes om-count {

@@ -82,6 +82,10 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-094** Default demo copy (manifesto, kicker, drop date 2026-10-10 20:00 +0800) lives in `templates/index.json` / section defaults, all editable. *Why:* the pitch needs a finished look; Origin replaces the copy in the editor.
 - **D-095** Password page shows the drop countdown without its own signup (Horizon's password section already has one).
 
+- **D-096** Hero choreography (user request, 2026-09-29): the logo first recedes and floats above the title so "ORIGIN MANILA" and the quote read clearly (0–0.28), holds (to 0.5), returns face-on (0.5–0.7), then the camera flies through the loop (crosses at ~97%, flash at 0.955). Default scroll length 280vh desktop / 220vh mobile to fit the hold. The vector fallback follows the same path.
+- **D-097** Loading intro = the chrome logo spinning 360° (CSS 3D on the inlined vector) + small counter + flash, ≤1.5 s; the WebGL logo then enters with its own 360° turn. *Why:* the real WebGL logo can't be ready inside the intro's 1.5 s budget on a cold mobile load (≈155 KB gz + GPU setup), so the loader uses the instant vector and the 3D spin lands right after.
+- **D-098** Their line "In the trap we shine" sits under the headline as a quiet, wide-tracked chrome line with "shine" in blackletter — no quote marks or decoration. Demo copy trimmed to concrete, short lines (manifesto: "Built in the concrete jungle. Every 1 of none is cut once, never again. Made in Manila, worn after dark."; hero kicker "Manila · One of none"). All editable.
+
 ## Horizon findings
 - **D-080** At ≥990px Horizon scrolls inside `.page-wrapper` (`html`/`body` are `overflow: hidden`, height 100dvh) so the theme drawer can push the page; below 990px the window scrolls. *Why it matters:* cinema ScrollTriggers must use `.page-wrapper` as the scroller on desktop and the window on mobile (set per `gsap.matchMedia` branch); sticky stages work in both.
 - **D-081** Horizon sets `scroll-behavior: smooth` on `html` and `.page-wrapper` for everyone; `om-brand.css` turns it off under `prefers-reduced-motion: reduce`. *Why:* accessibility non-negotiable.

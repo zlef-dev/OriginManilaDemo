@@ -81,5 +81,10 @@
 - Theme Check: 0 errors.
 - Package: `npm run package` → dist/.
 
+### Hero revision (2026-09-29)
+- Loading intro: chrome logo spins 360° + counter + flash; the 3D logo enters with a 360° turn (D-097).
+- Scroll: logo recedes/floats up → "ORIGIN MANILA" + "IN THE TRAP WE shine" → returns → fly-through (D-096). Checked at 38/64/90% on desktop and the hold on mobile (no overlap).
+- Copy de-cornified (D-098). Theme Check: 0 errors.
+
 ## Waiting on you
 - Review the homepage at http://127.0.0.1:9292 and the pitch notes in docs/INSTALL-ORIGIN.md.

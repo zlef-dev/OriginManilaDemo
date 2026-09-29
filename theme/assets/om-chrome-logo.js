@@ -128,7 +128,7 @@ const sparkleFragment = /* glsl */ `
  * @param {{ mobile: boolean, sparkles: number, tilt: number, onFirstFrame?: () => void, onSlow?: () => void }} options
  */
 export function createChromeLogo(canvas, svgText, options) {
-  const { mobile, sparkles = 40, tilt = 1, onFirstFrame, onSlow } = options;
+  const { mobile, sparkles = 40, tilt = 1, entranceSpin = true, onFirstFrame, onSlow } = options;
 
   const renderer = new WebGLRenderer({
     canvas,
@@ -233,6 +233,9 @@ export function createChromeLogo(canvas, svgText, options) {
   let sampled = 0;
   let last = performance.now();
   const startTime = last;
+  // Entrance: one full 360° turn when the 3D logo first appears (skipped if already scrolled).
+  const SPIN_MS = 1600;
+  let spinStart = null;
 
   function resize() {
     const { clientWidth: width, clientHeight: height } = canvas;
@@ -248,11 +251,14 @@ export function createChromeLogo(canvas, svgText, options) {
     const delta = Math.min(now - last, 100);
     last = now;
 
-    // Phase 1 (0 → 0.3): turn face-on and line up with the loop. Phase 2 (0.3 → 1): dolly through.
-    const turn = MathUtils.smoothstep(progress, 0, 0.3);
-    // Accelerating dolly: with END_Z = -2 the camera crosses the logo plane at ~93% scroll,
-    // right on the flash cut.
-    const dollyT = MathUtils.clamp((progress - 0.3) / 0.7, 0, 1);
+    // Scroll phases (must match the DOM timeline in om-hero.js):
+    // 0 → 0.28   recede: the logo pulls back and floats up, uncovering the headline + quote
+    // 0.28 → 0.5 hold on "ORIGIN MANILA"
+    // 0.5 → 0.7  come back, turn face-on, line up with the loop
+    // 0.66 → 1   accelerating dolly; crosses the logo plane at ~97%, on the flash cut
+    const recede = MathUtils.smoothstep(progress, 0, 0.28) * (1 - MathUtils.smoothstep(progress, 0.5, 0.68));
+    const turn = MathUtils.smoothstep(progress, 0.5, 0.7);
+    const dollyT = MathUtils.clamp((progress - 0.66) / 0.34, 0, 1);
     const dolly = dollyT * dollyT;
     const tiltWeight = (1 - turn) * tilt;
 
@@ -260,14 +266,27 @@ export function createChromeLogo(canvas, svgText, options) {
     eased.y += (pointer.y - eased.y) * Math.min(1, delta / 120);
     const idle = (now - startTime) / 1000;
 
-    logo.rotation.y = MathUtils.lerp(-0.42 + Math.sin(idle * 0.5) * 0.06, 0, turn) + eased.x * 0.25 * tiltWeight;
-    logo.rotation.x = MathUtils.lerp(0.14, 0, turn) - eased.y * 0.18 * tiltWeight;
-    logo.position.y = Math.sin(idle * 0.9) * 0.05 * (1 - turn);
+    let spin = 0;
+    if (spinStart !== null) {
+      const t = Math.min(1, (now - spinStart) / SPIN_MS);
+      spin = (1 - (1 - t) ** 3 - 1) * Math.PI * 2; // −2π → 0, ease-out cubic
+      if (t === 1) spinStart = null;
+    }
 
     const startZ = CAMERA_START_Z * Math.max(1, 1.25 / camera.aspect);
+    const pulledZ = startZ * (1 + recede);
+    // Lift in world units at the logo plane: ~62% of the visible half-height at that distance,
+    // which parks the (now smaller) mark above the headline.
+    const lift = recede * pulledZ * Math.tan(MathUtils.degToRad(camera.fov / 2)) * 0.62;
+
+    logo.rotation.y =
+      MathUtils.lerp(-0.42 + Math.sin(idle * 0.5) * 0.06, 0, turn) + eased.x * 0.25 * tiltWeight + spin;
+    logo.rotation.x = MathUtils.lerp(0.14, 0, turn) - eased.y * 0.18 * tiltWeight;
+    logo.position.y = Math.sin(idle * 0.9) * 0.05 * (1 - turn) + lift;
+
     camera.position.x = MathUtils.lerp(0, target.x, turn);
     camera.position.y = MathUtils.lerp(0, target.y, turn);
-    camera.position.z = MathUtils.lerp(startZ, safe ? CAMERA_END_Z : 1.2, dolly);
+    camera.position.z = MathUtils.lerp(pulledZ, safe ? CAMERA_END_Z : 1.2, dolly);
     camera.lookAt(camera.position.x, camera.position.y, camera.position.z - 1);
 
     sparkleMaterial.uniforms.uTime.value = idle;
@@ -275,6 +294,7 @@ export function createChromeLogo(canvas, svgText, options) {
 
     if (!firstFrameDone) {
       firstFrameDone = true;
+      if (entranceSpin && progress < 0.05) spinStart = now;
       onFirstFrame?.();
     } else if (sampled < 90) {
       // Watchdog: if most early frames blow the budget, hand back to the static logo.

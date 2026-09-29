@@ -15,7 +15,10 @@ class OmHero extends OmSection {
   setup() {
     this.logo = null;
     this.progress = 0;
+    const title = this.querySelector('.om-hero__title');
     const headline = this.querySelector('.om-hero__headline');
+    // Empty array when the quote setting is blank, so GSAP doesn't warn about a missing target.
+    const quote = this.querySelector('.om-hero__quote') || [];
     const meta = this.querySelector('.om-hero__meta');
     const cue = this.querySelector('.om-hero__cue');
     const vector = this.querySelector('.om-hero__vector');
@@ -42,14 +45,22 @@ class OmHero extends OmSection {
           onLeaveBack: () => root.classList.remove('om-header-hidden'),
         },
       });
+      // Phases match om-chrome-logo.js: recede 0–0.28, hold to 0.5, return 0.5–0.7, fly 0.66–1.
       timeline
-        .to(cue, { opacity: 0, duration: 0.08 }, 0)
-        .to(meta, { opacity: 0, y: -40, duration: 0.2 }, 0.04)
-        .to(headline, { scale: 1.4, opacity: 0, duration: 0.5 }, 0.25)
-        // No-WebGL fly-through: the vector logo rushes past the camera.
-        .to(vector, { scale: 9, opacity: 0, duration: 0.65, ease: 'power2.in' }, 0.3)
-        .to(flash, { opacity: 0.85, duration: 0.03 }, 0.93)
-        .to(flash, { opacity: 0, duration: 0.04 }, 0.96)
+        .to(cue, { opacity: 0, duration: 0.06 }, 0)
+        // the title settles a touch lower while the logo floats up
+        .to(title, { y: '6svh', duration: 0.28, ease: 'power1.out' }, 0)
+        .fromTo(quote, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.14, ease: 'power2.out' }, 0.12)
+        .to(meta, { opacity: 0, y: -24, duration: 0.12 }, 0.44)
+        .to(quote, { opacity: 0, duration: 0.1 }, 0.5)
+        .to(title, { y: 0, duration: 0.18 }, 0.5)
+        .to(headline, { scale: 1.4, opacity: 0, duration: 0.2 }, 0.56)
+        // No-WebGL version of the same path: up and away, back, then rush past the camera.
+        .to(vector, { yPercent: -95, scale: 0.55, duration: 0.28, ease: 'power1.inOut' }, 0)
+        .to(vector, { yPercent: 0, scale: 1, duration: 0.18, ease: 'power1.inOut' }, 0.5)
+        .to(vector, { scale: 9, opacity: 0, duration: 0.28, ease: 'power2.in' }, 0.69)
+        .to(flash, { opacity: 0.85, duration: 0.02 }, 0.955)
+        .to(flash, { opacity: 0, duration: 0.035 }, 0.975)
         .set({}, {}, 1);
 
       return () => root.classList.remove('om-header-hidden');
