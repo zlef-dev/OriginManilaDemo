@@ -142,7 +142,7 @@ class OmHero extends OmSection {
         mobile: window.matchMedia(MOBILE).matches,
         sparkles: Number(this.dataset.sparkles) || 0,
         tilt: Number(this.dataset.tilt) || 0,
-        fit: this.fitFraction(),
+        fit: () => this.fitFraction(),
         onFirstFrame: () => {
           this.classList.add('is-3d');
           queueRefresh();
@@ -155,8 +155,9 @@ class OmHero extends OmSection {
     }
     this.logo.setProgress(Math.min(1, this.progress / DOCK_END));
 
-    // Keep the 3D mark exactly the size of the vector (and so of the header mark) on resize.
-    this.fitObserver = new ResizeObserver(() => this.logo?.setFit(this.fitFraction()));
+    // Keep the 3D mark exactly the size of the vector (and so of the header mark): the logo re-reads
+    // the ratio whenever the canvas resizes; this covers the vector resizing on its own.
+    this.fitObserver = new ResizeObserver(() => this.logo?.setFit(() => this.fitFraction()));
     this.fitObserver.observe(this.vector);
 
     // Render only while the hero is on screen and the logo hasn't docked.

@@ -45,7 +45,8 @@
 }
 
 .om-hero__vector {
-  inline-size: min(78vw, 58rem);
+  /* Width, but also capped by viewport height so short, wide screens still show the headline. */
+  inline-size: min(82vw, 44rem, 85svh);
   block-size: auto;
   color: #d9dce2;
   filter: drop-shadow(0 1.5rem 3rem rgb(0 0 0 / 0.6));

@@ -72,7 +72,13 @@ const sparkleFragment = /* glsl */ `
  */
 export function createChromeLogo(canvas, svgText, options) {
   const { mobile, sparkles = 40, tilt = 1, entranceSpin = true, onFirstFrame, onSlow } = options;
+  // `fit` may be a function so it's re-read on every resize: the vector fallback is size-capped,
+  // so the canvas can grow while the vector doesn't (a stale ratio blew the logo up on wide screens).
   let fit = options.fit || 0.6;
+  const currentFit = () => {
+    const value = typeof fit === 'function' ? fit() : fit;
+    return value > 0 ? value : 0.6;
+  };
 
   const renderer = new WebGLRenderer({
     canvas,
@@ -171,7 +177,7 @@ export function createChromeLogo(canvas, svgText, options) {
   /** Camera distance that makes the logo span `fit` of the canvas width. */
   function placeCamera() {
     const halfFov = MathUtils.degToRad(camera.fov / 2);
-    camera.position.set(0, 0, LOGO_WIDTH / (fit * 2 * Math.tan(halfFov) * camera.aspect));
+    camera.position.set(0, 0, LOGO_WIDTH / (currentFit() * 2 * Math.tan(halfFov) * camera.aspect));
     camera.lookAt(0, 0, 0);
   }
 
@@ -234,7 +240,7 @@ export function createChromeLogo(canvas, svgText, options) {
       if (!running) render(performance.now());
     },
     setFit(value) {
-      if (value > 0) {
+      if (typeof value === 'function' || value > 0) {
         fit = value;
         placeCamera();
       }

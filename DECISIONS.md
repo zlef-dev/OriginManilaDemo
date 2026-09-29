@@ -91,6 +91,8 @@ One line of reasoning each. Superseded decisions get struck through and point to
 - **D-101** `npm run check:js` parses every `om-*.js` as an ES module. *Why:* a syntax error (`-x ** 3`) silently dropped the hero to its vector fallback — correct resilience, but it hid the bug.
 - **D-102** The hero headline never breaks inside a word (`word-break: keep-all`, `overflow-wrap: normal`) and sizes at 13vw. *Why:* Horizon's heading styles split "MANILA" as "MANIL/A" at 375px.
 
+- **D-103** Hero logo size: `min(82vw, 44rem, 85svh)` (was `min(78vw, 58rem)`), and the 3D camera re-reads the vector/canvas ratio on every canvas resize. *Why:* on a 1912×895 screen the logo was ~1360px wide — too big — because a window resize after load left a stale ratio (the size-capped vector never resized, so nothing re-fit the 3D). Now ~700px there, headline fully readable, dock alignment unchanged (≤1px).
+
 ## Horizon findings
 - **D-080** At ≥990px Horizon scrolls inside `.page-wrapper` (`html`/`body` are `overflow: hidden`, height 100dvh) so the theme drawer can push the page; below 990px the window scrolls. *Why it matters:* cinema ScrollTriggers must use `.page-wrapper` as the scroller on desktop and the window on mobile (set per `gsap.matchMedia` branch); sticky stages work in both.
 - **D-081** Horizon sets `scroll-behavior: smooth` on `html` and `.page-wrapper` for everyone; `om-brand.css` turns it off under `prefers-reduced-motion: reduce`. *Why:* accessibility non-negotiable.
